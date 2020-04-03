@@ -1,35 +1,42 @@
 package main
 
 import (
+	"os"
+	"os/exec"
 	"github.com/marcusolsson/tui-go"
 	"github.com/marcusolsson/tui-go/wordwrap"
 	"github.com/SlyMarbo/rss"
 	"jaytaylor.com/html2text"
 )
 
-
-var items []*rss.Item;
-
-func get_feed(url string) {
-	feed, err := rss.Fetch("http://benoneill.xyz/posts/index.xml")
+func get_feed(url string) *rss.Feed {
+	feed, err := rss.Fetch(url)
 
 	if err != nil {
 		panic(err)
 	}
 
-	items = feed.Items
+	return feed
+}
 
+/* open feed in default browser */
+func open_in_browser(url string) {
+	browser := os.Getenv("BROWSER")
+	if browser != "" {
+		cmd := exec.Command(browser, url)
+		cmd.Start()
+	}
 }
 
 func main() {
-	feed := "https://benoneill.xyz/posts/index.xml"
+	url := "https://www.fsf.org/static/fsforg/rss/blogs.xml"
 
-	get_feed(feed)
+	feed := get_feed(url)
 
 	feedbox := tui.NewTable(0, 0) // create table for feed names
 	feedbox.SetFocused(true)
 
-	for _, item := range items {
+	for _, item := range feed.Items {
 		feedbox.AppendRow(
 			tui.NewLabel(item.Title),
 		)
@@ -44,14 +51,15 @@ func main() {
 	info := tui.NewLabel("")
 
 	feedbox.OnSelectionChanged(func(t *tui.Table) {
-		e := items[t.Selected()]
+		e := feed.Items[t.Selected()]
 		info.SetText(e.Title)
 
-		feedtext, err := html2text.FromString(e.Summary, html2text.Options{PrettyTables: true})
+		metatext := "Feed: " + feed.Title + "\nTitle: " + e.Title + "\nDate: " + e.Date.String() + "\nLink: " + e.Link
+		feedtext, err := html2text.FromString(e.Summary + e.Content, html2text.Options{PrettyTables: true})
 		if err != nil {
 			panic(err)
 		}
-		content.SetText(wordwrap.WrapString(feedtext, 80))
+		content.SetText(metatext + "\n\n\n" + wordwrap.WrapString(feedtext, 80))
 	})
 
 	feedbox.Select(0)
@@ -78,7 +86,6 @@ func main() {
 			ui.Quit()
 		} else if view == 1 {
 			ui.SetWidget(feedview)
-			contentarea.ScrollToTop() // Autoscroll back
 			view = 0
 		}
 	})
@@ -86,24 +93,13 @@ func main() {
 	ui.SetKeybinding("k", func() { contentarea.Scroll(0, -1) })
 	ui.SetKeybinding("l", func() {
 		ui.SetWidget(contentview)
+		contentarea.ScrollToTop() // Autoscroll back
 		view = 1
 	})
 
-	ui.SetKeybinding("Esc", func() {
-		if view == 0 {
-			ui.Quit()
-		} else if view == 1 {
-			ui.SetWidget(feedview)
-			contentarea.ScrollToTop() // Autoscroll back
-			view = 0
-		}
+	ui.SetKeybinding("o", func() {
+		open_in_browser(feed.Items[feedbox.Selected()].Link)
 	})
-	ui.SetKeybinding("Enter", func() {
-		ui.SetWidget(contentview)
-		view = 1
-	})
-	ui.SetKeybinding("Up", func() { contentarea.Scroll(0, -1) })
-	ui.SetKeybinding("Down", func() { contentarea.Scroll(0, 1) })
 
 	if err := ui.Run(); err != nil {
 		panic(err)
