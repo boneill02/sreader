@@ -12,6 +12,7 @@ import (
 	"strings"
 	"net/http"
 	"crypto/sha1"
+	"encoding/hex"
 )
 
 var ui tui.UI
@@ -36,7 +37,7 @@ func sync(urls []string) {
 		}
 
 		urlsum := sha1.Sum([]byte(url))
-		filename := basedir + "/" + string(urlsum[:])
+		filename := basedir + "/" + hex.EncodeToString(urlsum[:])
 		out, err := os.Create(filename)
 		if err != nil {
 			panic(err)
@@ -51,7 +52,7 @@ func sync(urls []string) {
 func get_feed(url string) *gofeed.Feed {
 	basedir := os.Getenv("HOME") + "/.local/share/sreader"
 	urlsum := sha1.Sum([]byte(url))
-	file, err := os.Open(basedir + "/" + string(urlsum[:]))
+	file, err := os.Open(basedir + "/" + hex.EncodeToString(urlsum[:]))
 
 	if err != nil {
 		panic(err)
