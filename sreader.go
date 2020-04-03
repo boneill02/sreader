@@ -30,6 +30,18 @@ func get_feed(url string) *gofeed.Feed {
 	return feed
 }
 
+/* open feed in video player */
+func open_in_player(url string) {
+	player := os.Getenv("PLAYER")
+
+	if player == "" {
+		player = "mpv" // default
+	}
+
+	cmd := exec.Command(player, url)
+	cmd.Start()
+}
+
 /* open feed in default browser */
 func open_in_browser(url string) {
 	browser := os.Getenv("BROWSER")
@@ -132,6 +144,18 @@ func build_ui(feeds []*gofeed.Feed) tui.UI {
 			ui.SetWidget(entryview)
 			view = 2
 			break
+		}
+	})
+
+	ui.SetKeybinding("o", func() {
+		if view != 0 {
+			open_in_browser(feeds[maintable.Selected()].Items[feedtable.Selected()].Link)
+		}
+	})
+
+	ui.SetKeybinding("v", func() {
+		if view != 0 {
+			open_in_player(feeds[maintable.Selected()].Items[feedtable.Selected()].Link)
 		}
 	})
 
