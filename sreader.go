@@ -7,6 +7,11 @@ import (
 	"github.com/marcusolsson/tui-go/wordwrap"
 	"github.com/mmcdole/gofeed"
 	"jaytaylor.com/html2text"
+	"io"
+	"io/ioutil"
+	"strings"
+	"net/http"
+	"crypto/sha1"
 )
 
 var ui tui.UI
@@ -19,9 +24,41 @@ var contentarea *tui.ScrollArea
 var entryview *tui.Box
 var view int
 
+func sync(urls []string) {
+	basedir := os.Getenv("HOME") + "/.local/share/sreader"
+	for _, url := range urls {
+		if len(url) < 1 {
+			continue
+		}
+		resp, err := http.Get(url)
+		if err != nil {
+			panic(err)
+		}
+
+		urlsum := sha1.Sum([]byte(url))
+		filename := basedir + "/" + string(urlsum[:])
+		out, err := os.Create(filename)
+		if err != nil {
+			panic(err)
+		}
+		_, err = io.Copy(out, resp.Body)
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
 func get_feed(url string) *gofeed.Feed {
+	basedir := os.Getenv("HOME") + "/.local/share/sreader"
+	urlsum := sha1.Sum([]byte(url))
+	file, err := os.Open(basedir + "/" + string(urlsum[:]))
+
+	if err != nil {
+		panic(err)
+	}
+
 	fp := gofeed.NewParser()
-	feed, err := fp.ParseURL(url)
+	feed, err := fp.Parse(file)
 
 	if err != nil {
 		panic(err)
@@ -163,22 +200,34 @@ func build_ui(feeds []*gofeed.Feed) tui.UI {
 }
 
 func main() {
-	feedurls := os.Args[1:]
+	dat, err := ioutil.ReadFile(os.Getenv("HOME") + "/.config/sreader/urls")
+	if err != nil {
+		panic(err)
+	}
 
-	if len(feedurls) == 0 {
-		panic("no feed url specified")
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "sync":
+			sync(strings.Split(string(dat), "\n"))
+			return
+		}
 	}
 
 	var feeds []*gofeed.Feed;
 
-	for _, url := range feedurls {
-		feeds = append(feeds, get_feed(url))
+	for _, url := range strings.Split(string(dat), "\n") {
+		if len(url) > 0 {
+			feeds = append(feeds, get_feed(url))
+		}
 	}
+
 
 	ui = build_ui(feeds)
 
 	ui.SetKeybinding("q", func() { ui.Quit() })
-	if err := ui.Run(); err != nil {
+
+	err = ui.Run()
+	if err != nil {
 		panic(err)
 	}
 }
