@@ -170,6 +170,17 @@ func build_ui(feeds []*gofeed.Feed) tui.UI {
 		}
 	})
 
+	ui.SetKeybinding("j", func() {
+		if (view == 2) {
+			contentarea.Scroll(0, 1)
+		}
+	})
+	ui.SetKeybinding("k", func() {
+		if (view == 2) {
+			contentarea.Scroll(0, -1)
+		}
+	})
+
 	ui.SetKeybinding("l", func() {
 		switch view {
 		case 0:
@@ -180,6 +191,7 @@ func build_ui(feeds []*gofeed.Feed) tui.UI {
 		case 1:
 			update_entryview(feeds[maintable.Selected()], feeds[maintable.Selected()].Items[feedtable.Selected()])
 			ui.SetWidget(entryview)
+			contentarea.ScrollToTop()
 			view = 2
 			break
 		}
