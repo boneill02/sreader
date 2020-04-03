@@ -5,12 +5,23 @@ import (
 	"os/exec"
 	"github.com/marcusolsson/tui-go"
 	"github.com/marcusolsson/tui-go/wordwrap"
-	"github.com/SlyMarbo/rss"
+	"github.com/mmcdole/gofeed"
 	"jaytaylor.com/html2text"
 )
 
-func get_feed(url string) *rss.Feed {
-	feed, err := rss.Fetch(url)
+var ui tui.UI
+var maintable *tui.Table
+var mainview *tui.Box
+var feedtable *tui.Table
+var feedview *tui.Box
+var content *tui.Label
+var contentarea *tui.ScrollArea
+var entryview *tui.Box
+var view int
+
+func get_feed(url string) *gofeed.Feed {
+	fp := gofeed.NewParser()
+	feed, err := fp.ParseURL(url)
 
 	if err != nil {
 		panic(err)
@@ -28,79 +39,121 @@ func open_in_browser(url string) {
 	}
 }
 
-func main() {
-	url := "https://www.fsf.org/static/fsforg/rss/blogs.xml"
+func init_mainview(feeds []*gofeed.Feed) {
+	maintable = tui.NewTable(0, 0)
+	maintable.SetFocused(true)
 
-	feed := get_feed(url)
-
-	feedbox := tui.NewTable(0, 0) // create table for feed names
-	feedbox.SetFocused(true)
-
-	for _, item := range feed.Items {
-		feedbox.AppendRow(
-			tui.NewLabel(item.Title),
-		)
+	for _, feed := range feeds {
+		maintable.AppendRow(tui.NewLabel(feed.Title))
 	}
 
-	content := tui.NewLabel("")
+	mainpadding := tui.NewLabel("")
+	mainpadding.SetSizePolicy(tui.Preferred, tui.Expanding)
+	mainview = tui.NewVBox(maintable, mainpadding)
+}
+
+func init_feedview() {
+	feedtable = tui.NewTable(0, 0)
+	feedpadding := tui.NewLabel("")
+	feedpadding.SetSizePolicy(tui.Preferred, tui.Expanding)
+	feedview = tui.NewVBox(feedtable, feedpadding)
+}
+
+func update_feedview(feed *gofeed.Feed) {
+	items := feed.Items
+	feedtable.RemoveRows()
+	for _, item := range items {
+		feedtable.AppendRow(tui.NewLabel(item.Title))
+	}
+
+	feedtable.SetFocused(true)
+	feedtable.Select(0)
+}
+
+func init_entryview() {
+	content = tui.NewLabel("")
 	content.SetSizePolicy(tui.Preferred, tui.Expanding)
 
-	contentarea := tui.NewScrollArea(content)
-	contentview := tui.NewVBox(contentarea)
+	contentarea = tui.NewScrollArea(content)
+	entryview = tui.NewVBox(contentarea)
+}
 
-	info := tui.NewLabel("")
+func update_entryview(feed *gofeed.Feed, item *gofeed.Item) {
 
-	feedbox.OnSelectionChanged(func(t *tui.Table) {
-		e := feed.Items[t.Selected()]
-		info.SetText(e.Title)
+	metatext := "Feed: " + feed.Title + "\nTitle: " + item.Title + "\nDate: " + item.Published + "\nLink: " + item.Link
+	feedtext, err := html2text.FromString(item.Description + "\n" + item.Content, html2text.Options{PrettyTables: true})
+	if err != nil {
+		panic(err)
+	}
 
-		metatext := "Feed: " + feed.Title + "\nTitle: " + e.Title + "\nDate: " + e.Date.String() + "\nLink: " + e.Link
-		feedtext, err := html2text.FromString(e.Summary + e.Content, html2text.Options{PrettyTables: true})
-		if err != nil {
-			panic(err)
-		}
-		content.SetText(metatext + "\n\n\n" + wordwrap.WrapString(feedtext, 80))
-	})
+	content.SetText(metatext + "\n\n\n" + wordwrap.WrapString(feedtext, 80))
+}
 
-	feedbox.Select(0)
+func build_ui(feeds []*gofeed.Feed) tui.UI {
+	init_mainview(feeds)
+	init_feedview()
+	update_feedview(feeds[0])
+	init_entryview()
+	update_entryview(feeds[0], feeds[0].Items[0])
 
-	feedpad := tui.NewLabel("")
-	feedpad.SetSizePolicy(tui.Preferred, tui.Expanding)
-
-	feedview := tui.NewVBox(feedbox, feedpad)
-
-	root := tui.NewVBox(feedview)
-
+	root := tui.NewVBox(mainview, feedview, entryview)
 	ui, err := tui.New(root)
 
-
-	view := 0
+	ui.SetWidget(mainview)
 
 	if err != nil {
 		panic(err)
 	}
 
-	ui.SetKeybinding("q", func() { ui.Quit() })
 	ui.SetKeybinding("h", func() {
-		if view == 0 {
+		switch view {
+		case 0:
 			ui.Quit()
-		} else if view == 1 {
-			ui.SetWidget(feedview)
+			break
+		case 1:
+			ui.SetWidget(mainview)
 			view = 0
+			break
+		case 2:
+			ui.SetWidget(feedview)
+			view = 1
 		}
 	})
-	ui.SetKeybinding("j", func() { contentarea.Scroll(0, 1) })
-	ui.SetKeybinding("k", func() { contentarea.Scroll(0, -1) })
+
 	ui.SetKeybinding("l", func() {
-		ui.SetWidget(contentview)
-		contentarea.ScrollToTop() // Autoscroll back
-		view = 1
+		switch view {
+		case 0:
+			update_feedview(feeds[maintable.Selected()])
+			ui.SetWidget(feedview)
+			view = 1
+			break
+		case 1:
+			update_entryview(feeds[maintable.Selected()], feeds[maintable.Selected()].Items[feedtable.Selected()])
+			ui.SetWidget(entryview)
+			view = 2
+			break
+		}
 	})
 
-	ui.SetKeybinding("o", func() {
-		open_in_browser(feed.Items[feedbox.Selected()].Link)
-	})
+	return ui
+}
 
+func main() {
+	feedurls := os.Args[1:]
+
+	if len(feedurls) == 0 {
+		panic("no feed url specified")
+	}
+
+	var feeds []*gofeed.Feed;
+
+	for _, url := range feedurls {
+		feeds = append(feeds, get_feed(url))
+	}
+
+	ui = build_ui(feeds)
+
+	ui.SetKeybinding("q", func() { ui.Quit() })
 	if err := ui.Run(); err != nil {
 		panic(err)
 	}
