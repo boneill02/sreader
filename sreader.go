@@ -36,6 +36,7 @@ import (
 
 /* UI stuff */
 var ui tui.UI
+var title *tui.Label
 var maintable *tui.Table
 var mainview *tui.Box
 var feedtable *tui.Table
@@ -43,13 +44,17 @@ var feedview *tui.Box
 var content *tui.Label
 var contentarea *tui.ScrollArea
 var entryview *tui.Box
+var theme *tui.Theme
 var view int // keep track of current view: mainview=0,feedview=1,entryview=2
 
+var titlestr string
 var confdir string // config directory
 var datadir string // data directory (xml files)
+var urls []string
 
 /* sync all feeds (download files) */
-func sync(urls []string) {
+func sync() {
+	title.SetText(titlestr + "syncing...")
 	for _, url := range urls {
 		if len(url) < 1 {
 			continue
@@ -123,7 +128,7 @@ func init_mainview(feeds []*gofeed.Feed) {
 
 	mainpadding := tui.NewLabel("")
 	mainpadding.SetSizePolicy(tui.Preferred, tui.Expanding)
-	mainview = tui.NewVBox(maintable, mainpadding)
+	mainview = tui.NewVBox(title, maintable, mainpadding)
 }
 
 /* initialize the feed view (list of entries in feed, view 1) */
@@ -131,7 +136,7 @@ func init_feedview() {
 	feedtable = tui.NewTable(0, 0)
 	feedpadding := tui.NewLabel("")
 	feedpadding.SetSizePolicy(tui.Preferred, tui.Expanding)
-	feedview = tui.NewVBox(feedtable, feedpadding)
+	feedview = tui.NewVBox(title, feedtable, feedpadding)
 }
 
 /* update feed view for new feed */
@@ -155,9 +160,10 @@ func init_entryview() {
 	content.SetSizePolicy(tui.Preferred, tui.Expanding)
 
 	contentarea = tui.NewScrollArea(content)
-	entryview = tui.NewVBox(contentarea)
+	entryview = tui.NewVBox(title, contentarea)
 }
 
+/* update entryview when a different one is opened */
 func update_entryview(feed *gofeed.Feed, item *gofeed.Item) {
 	metatext := "Feed: " + feed.Title + "\nTitle: " + item.Title + "\nDate: " + item.Published + "\nLink: " + item.Link
 	feedtext, err := html2text.FromString(item.Description + "\n" + item.Content, html2text.Options{PrettyTables: true})
@@ -168,7 +174,10 @@ func update_entryview(feed *gofeed.Feed, item *gofeed.Item) {
 	content.SetText(metatext + "\n\n\n" + wordwrap.WrapString(feedtext, 80))
 }
 
+/* create a ui based on feeds */
 func build_ui(feeds []*gofeed.Feed) tui.UI {
+	title = tui.NewLabel(titlestr)
+
 	init_mainview(feeds)
 	init_feedview()
 	update_feedview(feeds[0])
@@ -226,6 +235,10 @@ func build_ui(feeds []*gofeed.Feed) tui.UI {
 		}
 	})
 
+	ui.SetKeybinding("r", func() {
+		sync()
+	})
+
 	ui.SetKeybinding("o", func() {
 		if view != 0 {
 			open_in_browser(feeds[maintable.Selected()].Items[feedtable.Selected()].Link)
@@ -238,6 +251,8 @@ func build_ui(feeds []*gofeed.Feed) tui.UI {
 		}
 	})
 
+	ui.SetKeybinding("q", func() { ui.Quit() })
+
 	return ui
 }
 
@@ -246,32 +261,33 @@ func main() {
 	confdir = os.Getenv("HOME") + "/.config/sreader"
 	datadir = os.Getenv("HOME") + "/.local/share/sreader"
 
+	titlestr = "sreader: "
+
 	dat, err := ioutil.ReadFile(confdir + "/urls")
 	if err != nil {
 		panic(err) // TODO maybe don't panic here? create the file instead
 	}
 
+	urls = strings.Split(string(dat), "\n")
+
 	/* sync and quit if called with the arg "sync" */
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
 		case "sync":
-			sync(strings.Split(string(dat), "\n"))
+			sync()
 			return
 		}
 	}
 
 	var feeds []*gofeed.Feed;
 
-	for _, url := range strings.Split(string(dat), "\n") {
+	for _, url := range urls {
 		if len(url) > 0 {
 			feeds = append(feeds, get_feed(url))
 		}
 	}
 
-
 	ui = build_ui(feeds)
-
-	ui.SetKeybinding("q", func() { ui.Quit() })
 
 	err = ui.Run()
 	if err != nil {
