@@ -1,3 +1,22 @@
+/*
+	sreader.go: A simple RSS reader written in Go. See LICENSE for copyright details.
+	Author: Ben O'Neill <ben@benoneill.xyz>
+
+	This uses hex-encoded SHA1 hashes of the desired feeds' URLs to store them. It's
+	much better than putting the URL or feed name as a filename because that would
+	look ugly.
+
+	TODO show when entry has been read*
+	TODO view for all entries from all feeds at once (most recent first)
+	TODO filter out read entries*
+	TODO searching through entries via regex
+	TODO nickname feeds (so this is better than newsboat)*
+	TODO add config file for keybindings and default browser/player
+
+	*: we might need to use a database because of these which sucks, maybe i will make
+	it JSON, maybe plaintext, but I will try to avoid using a database as much as I can.
+*/
+
 package main
 
 import (
@@ -15,6 +34,7 @@ import (
 	"encoding/hex"
 )
 
+/* UI stuff */
 var ui tui.UI
 var maintable *tui.Table
 var mainview *tui.Box
@@ -23,10 +43,13 @@ var feedview *tui.Box
 var content *tui.Label
 var contentarea *tui.ScrollArea
 var entryview *tui.Box
-var view int
+var view int // keep track of current view: mainview=0,feedview=1,entryview=2
 
+var confdir string // config directory
+var datadir string // data directory (xml files)
+
+/* sync all feeds (download files) */
 func sync(urls []string) {
-	basedir := os.Getenv("HOME") + "/.local/share/sreader"
 	for _, url := range urls {
 		if len(url) < 1 {
 			continue
@@ -37,7 +60,7 @@ func sync(urls []string) {
 		}
 
 		urlsum := sha1.Sum([]byte(url))
-		filename := basedir + "/" + hex.EncodeToString(urlsum[:])
+		filename := datadir + "/" + hex.EncodeToString(urlsum[:])
 		out, err := os.Create(filename)
 		if err != nil {
 			panic(err)
@@ -49,10 +72,10 @@ func sync(urls []string) {
 	}
 }
 
+/* parse feed from data directory */
 func get_feed(url string) *gofeed.Feed {
-	basedir := os.Getenv("HOME") + "/.local/share/sreader"
 	urlsum := sha1.Sum([]byte(url))
-	file, err := os.Open(basedir + "/" + hex.EncodeToString(urlsum[:]))
+	file, err := os.Open(datadir + "/" + hex.EncodeToString(urlsum[:]))
 
 	if err != nil {
 		panic(err)
@@ -73,10 +96,10 @@ func open_in_player(url string) {
 	player := os.Getenv("PLAYER")
 
 	if player == "" {
-		player = "mpv" // default
+		player = "mpv" // default player
 	}
 
-	cmd := exec.Command(player, url)
+	cmd := exec.Command("setsid", "nohup", player, url)
 	cmd.Start()
 }
 
@@ -89,6 +112,7 @@ func open_in_browser(url string) {
 	}
 }
 
+/* initialize the main view (first thing you see, view 0) */
 func init_mainview(feeds []*gofeed.Feed) {
 	maintable = tui.NewTable(0, 0)
 	maintable.SetFocused(true)
@@ -102,6 +126,7 @@ func init_mainview(feeds []*gofeed.Feed) {
 	mainview = tui.NewVBox(maintable, mainpadding)
 }
 
+/* initialize the feed view (list of entries in feed, view 1) */
 func init_feedview() {
 	feedtable = tui.NewTable(0, 0)
 	feedpadding := tui.NewLabel("")
@@ -109,9 +134,13 @@ func init_feedview() {
 	feedview = tui.NewVBox(feedtable, feedpadding)
 }
 
+/* update feed view for new feed */
 func update_feedview(feed *gofeed.Feed) {
 	items := feed.Items
 	feedtable.RemoveRows()
+	if len(items) > 80 {
+		items = items[:80]
+	}
 	for _, item := range items {
 		feedtable.AppendRow(tui.NewLabel(item.Title))
 	}
@@ -120,6 +149,7 @@ func update_feedview(feed *gofeed.Feed) {
 	feedtable.Select(0)
 }
 
+/* initialize the entry view (entry content, view 2) */
 func init_entryview() {
 	content = tui.NewLabel("")
 	content.SetSizePolicy(tui.Preferred, tui.Expanding)
@@ -129,7 +159,6 @@ func init_entryview() {
 }
 
 func update_entryview(feed *gofeed.Feed, item *gofeed.Item) {
-
 	metatext := "Feed: " + feed.Title + "\nTitle: " + item.Title + "\nDate: " + item.Published + "\nLink: " + item.Link
 	feedtext, err := html2text.FromString(item.Description + "\n" + item.Content, html2text.Options{PrettyTables: true})
 	if err != nil {
@@ -213,11 +242,16 @@ func build_ui(feeds []*gofeed.Feed) tui.UI {
 }
 
 func main() {
-	dat, err := ioutil.ReadFile(os.Getenv("HOME") + "/.config/sreader/urls")
+	/* set configuration stuff. TODO tho create the directories if not existent */
+	confdir = os.Getenv("HOME") + "/.config/sreader"
+	datadir = os.Getenv("HOME") + "/.local/share/sreader"
+
+	dat, err := ioutil.ReadFile(confdir + "/urls")
 	if err != nil {
-		panic(err)
+		panic(err) // TODO maybe don't panic here? create the file instead
 	}
 
+	/* sync and quit if called with the arg "sync" */
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
 		case "sync":
