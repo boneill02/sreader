@@ -257,15 +257,29 @@ func build_ui(feeds []*gofeed.Feed) tui.UI {
 }
 
 func main() {
-	/* set configuration stuff. TODO tho create the directories if not existent */
+	/* set configuration stuff */
 	confdir = os.Getenv("HOME") + "/.config/sreader"
 	datadir = os.Getenv("HOME") + "/.local/share/sreader"
-
+	urlsfile := confdir + "/urls"
 	titlestr = "sreader: "
 
-	dat, err := ioutil.ReadFile(confdir + "/urls")
+	/* this won't do anything if the files exist already */
+	os.MkdirAll(confdir, os.ModePerm)
+	os.MkdirAll(datadir, os.ModePerm)
+
+	_, err := os.Stat(urlsfile)
+    if os.IsNotExist(err) {
+		file, err := os.Create(urlsfile)
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+	}
+
+	dat, err := ioutil.ReadFile(urlsfile)
+
 	if err != nil {
-		panic(err) // TODO maybe don't panic here? create the file instead
+		panic(err)
 	}
 
 	urls = strings.Split(string(dat), "\n")
