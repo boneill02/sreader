@@ -12,6 +12,7 @@
 	TODO searching through entries via regex
 	TODO nickname feeds (so this is better than newsboat)*
 	TODO add config file for keybindings and default browser/player
+	TODO show refreshing status instead of freezing
 
 	*: we might need to use a database because of these which sucks, maybe i will make
 	it JSON, maybe plaintext, but I will try to avoid using a database as much as I can.
