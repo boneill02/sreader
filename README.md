@@ -27,4 +27,7 @@ patches is always preferred.
 
 ## License
 
-GNU GPL v3 only.
+Copyright (C) 2020-2021 Ben O'Neill <ben@benoneill.xyz>. License: GNU
+GPL Version 3 <https://gnu.org/licenses/gpl.html>. This is free
+software: you are free to change and redistribute it. There is NO
+WARRANTY, to the extent permitted by law.
