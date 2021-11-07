@@ -22,8 +22,7 @@ look ugly in the filesystem and possibly cause issues.
 
 ## Bugs
 
-Submit an issue. Email me a patch or submit a PR if you've fixed it. Emailing
-patches is always preferred.
+Submit an issue. Email me a patch or submit a PR if you've fixed it.
 
 ## License
 

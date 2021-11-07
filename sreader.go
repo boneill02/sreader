@@ -23,6 +23,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"github.com/marcusolsson/tui-go"
@@ -304,10 +305,15 @@ func main() {
 		}
 	}
 
-	ui = build_ui(feeds)
+	if len(feeds) == 0 {
+		// no feeds in config file
+		fmt.Printf("No feeds listed in the configuration file. Exiting...\n")
+	} else {
+		ui = build_ui(feeds)
 
-	err = ui.Run()
-	if err != nil {
-		panic(err)
+		err = ui.Run()
+		if err != nil {
+			panic(err)
+		}
 	}
 }
