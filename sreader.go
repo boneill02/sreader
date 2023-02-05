@@ -58,7 +58,6 @@ var urls []string
 
 /* sync all feeds (download files) */
 func sync() {
-	title.SetText(titlestr + "syncing...")
 	for _, url := range urls {
 		if len(url) < 1 {
 			continue
