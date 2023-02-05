@@ -160,9 +160,8 @@ func update_feedview(feed *gofeed.Feed) {
 /* initialize the entry view (entry content, view 2) */
 func init_entryview() {
 	content = tui.NewLabel("")
-	content.SetSizePolicy(tui.Preferred, tui.Expanding)
-
 	contentarea = tui.NewScrollArea(content)
+	contentarea.SetSizePolicy(tui.Preferred, tui.Expanding)
 	entryview = tui.NewVBox(title, contentarea)
 }
 
