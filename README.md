@@ -1,9 +1,5 @@
 # sreader: A Simple TUI Atom and RSS Feed Reader
 
-This uses hex-encoded SHA1 hashes of the desired feeds' URLs to store them. It's
-much better than putting the URL or feed name as a filename because that would
-look ugly in the filesystem and possibly cause issues.
-
 ## Usage
 
 1. Run `go build sreader.go` (or `go install sreader.go`)
