@@ -51,10 +51,12 @@ var entryview *tui.Box
 var theme *tui.Theme
 var view int // keep track of current view: mainview=0,feedview=1,entryview=2
 
-var titlestr string
-var confdir string // config directory
-var datadir string // data directory (xml files)
+const titlestr string = "sreader: "
+const confdir string = "/.config/sreader"
+const datadir string = "/.local/share/sreader"
+const idxfile string = datadir + "/index"
 var urls []string
+
 
 /* sync all feeds (download files) */
 func sync() {
@@ -68,7 +70,7 @@ func sync() {
 		}
 
 		urlsum := sha1.Sum([]byte(url))
-		filename := datadir + "/" + hex.EncodeToString(urlsum[:])
+		filename := os.Getenv("HOME") + datadir + "/" + hex.EncodeToString(urlsum[:])
 		out, err := os.Create(filename)
 		if err != nil {
 			panic(err)
@@ -83,7 +85,7 @@ func sync() {
 /* parse feed from data directory */
 func get_feed(url string) *gofeed.Feed {
 	urlsum := sha1.Sum([]byte(url))
-	file, err := os.Open(datadir + "/" + hex.EncodeToString(urlsum[:]))
+	file, err := os.Open(os.Getenv("HOME") + datadir + "/" + hex.EncodeToString(urlsum[:]))
 
 	if err != nil {
 		panic(err)
@@ -195,6 +197,8 @@ func build_ui(feeds []*gofeed.Feed) tui.UI {
 		panic(err)
 	}
 
+	/* keybindings */
+
 	ui.SetKeybinding("h", func() {
 		switch view {
 		case 0:
@@ -260,14 +264,11 @@ func build_ui(feeds []*gofeed.Feed) tui.UI {
 
 func main() {
 	/* set configuration stuff */
-	confdir = os.Getenv("HOME") + "/.config/sreader"
-	datadir = os.Getenv("HOME") + "/.local/share/sreader"
-	urlsfile := confdir + "/urls"
-	titlestr = "sreader: "
+	urlsfile := os.Getenv("HOME") + confdir + "/urls"
 
 	/* this won't do anything if the files exist already */
-	os.MkdirAll(confdir, os.ModePerm)
-	os.MkdirAll(datadir, os.ModePerm)
+	os.MkdirAll(os.Getenv("HOME") + confdir, os.ModePerm)
+	os.MkdirAll(os.Getenv("HOME") + datadir, os.ModePerm)
 
 	_, err := os.Stat(urlsfile)
     if os.IsNotExist(err) {
