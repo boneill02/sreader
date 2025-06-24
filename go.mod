@@ -1,6 +1,8 @@
 module github.com/boneill02/sreader
 
-go 1.20
+go 1.23.0
+
+toolchain go1.24.4
 
 require (
 	github.com/marcusolsson/tui-go v0.4.0
@@ -22,6 +24,6 @@ require (
 	github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
-	golang.org/x/net v0.7.0 // indirect
-	golang.org/x/text v0.7.0 // indirect
+	golang.org/x/net v0.38.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
 )
