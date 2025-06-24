@@ -1,9 +1,5 @@
 # sreader: A Simple TUI Atom and RSS Feed Reader
 
-![index](https://oneill.sh/img/sreader-index.png)
-![feedview](https://oneill.sh/img/sreader-feedview.png)
-![entryview](https://oneill.sh/img/sreader-entryview.png)
-
 ## Usage
 
 1. `go install sreader.go`
@@ -39,6 +35,20 @@ sreader uses Vim-like keybindings by default.
   variable is empty)
 * `r`: Refresh feeds
 * `q`: Quit
+
+## Screenshots
+
+### Index view
+![index](https://oneill.sh/img/sreader-index.png)
+
+### Feed view
+
+![feedview](https://oneill.sh/img/sreader-feedview.png)
+
+### Entry view
+
+![entryview](https://oneill.sh/img/sreader-entryview.png)
+
 
 ## Bugs
 
