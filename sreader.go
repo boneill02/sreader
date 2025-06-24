@@ -1,7 +1,7 @@
 /*
 	sreader.go: A simple RSS reader written in Go. See LICENSE for
 	copyright details.
-	Author: Ben O'Neill <ben@benoneill.xyz>
+	Author: Ben O'Neill <ben@oneill.sh>
 
 	This uses hex-encoded SHA1 hashes of the desired feeds' URLs to
 	store them. It's much better than putting the URL or feed name as
