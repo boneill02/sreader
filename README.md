@@ -13,15 +13,6 @@
 - [X] Open in browser or media player
 - [X] Vim keys
 - [X] XDG Base Directory Specification compliant
-- [ ] Show when an entry has been read
-- [ ] View all entries at once
-- [ ] Filter out read entries
-- [ ] Regex search through entries
-- [ ] "Nickname" feeds
-- [ ] Config file for keybindings and default browsers/players
-- [ ] Search for feeds
-- [ ] Color theming
-- [ ] Add feeds through the TUI
 
 ## Keybindings
 
@@ -55,5 +46,5 @@ If you find a bug, submit an issue, PR, or email me with a description and/or pa
 
 ## License
 
-Copyright (c) 2019-2025 Ben O'Neill <ben@oneill.sh>. This work is released under the
+Copyright (c) 2020-2025 Ben O'Neill <ben@oneill.sh>. This work is released under the
 terms of the MIT License. See [LICENSE](LICENSE) for the license terms.
