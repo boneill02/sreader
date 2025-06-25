@@ -1,4 +1,4 @@
-# sreader: A Simple TUI Atom and RSS Feed Reader
+# sreader: A TUI Atom and RSS Feed Reader
 
 ## Usage
 
@@ -9,9 +9,9 @@
 
 ## Features
 
-- [X] Simple, clean TUI interface
-- [X] Open in browser or media player
-- [X] Vim keys
+- [X] Clean, intuitive TUI interface
+- [X] Open entries in browser or media player
+- [X] Vim key bindings
 - [X] XDG Base Directory Specification compliant
 
 ## Keybindings
