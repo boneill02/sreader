@@ -18,9 +18,10 @@
 
 sreader uses Vim-like keybindings by default.
 
-* `l`: Open selected list entry in sreader
-* `j`: Select next list entry
-* `k`: Select previous list entry
+* `h`: Go back
+* `j`: Select next item
+* `k`: Select previous item
+* `l`: Open selected item
 * `o`: Open selected list entry in `$BROWSER`
 * `v`: Open selected list entry in `$PLAYER` (or [mpv](https://mpv.io/) if env
   variable is empty)
