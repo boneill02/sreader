@@ -1,5 +1,7 @@
 # sreader: A TUI Atom and RSS Feed Reader
 
+[![Build Status](https://github.com/boneill02/sreader/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/boneill02/sreader/actions/workflows/go.yml).
+
 ## Usage
 
 1. `go install sreader.go`
