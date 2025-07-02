@@ -3,11 +3,10 @@ package feed
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"io"
+	"net/http"
 	"os"
 	"os/exec"
-	"io"
-	"io/ioutil"
-	"net/http"
 	"strings"
 
 	"github.com/mmcdole/gofeed"
@@ -15,7 +14,7 @@ import (
 
 const confdir string = "/.config/sreader"
 const datadir string = "/.local/share/sreader"
-const idxfile string = datadir + "/index"
+
 var urls []string
 
 /**
@@ -39,16 +38,33 @@ func GetFeed(url string) *gofeed.Feed {
 	return feed
 }
 
-func Init() []*gofeed.Feed {
-	/* set configuration stuff */
+/* Get URLs from the urls file */
+func GetUrls() []string {
 	urlsfile := os.Getenv("HOME") + confdir + "/urls"
-
-	/* this won't do anything if the files exist already */
-	os.MkdirAll(os.Getenv("HOME") + confdir, os.ModePerm)
-	os.MkdirAll(os.Getenv("HOME") + datadir, os.ModePerm)
-
 	_, err := os.Stat(urlsfile)
-    if os.IsNotExist(err) {
+	if os.IsNotExist(err) {
+		file, err := os.Create(urlsfile)
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+	}
+	dat, err := os.ReadFile(urlsfile)
+	if err != nil {
+		panic(err)
+	}
+	urls = strings.Split(string(dat), "\n")
+	return urls
+}
+
+/* Create all necessary files and directories if they don't exist yet */
+func CreateFiles() {
+	urlsfile := os.Getenv("HOME") + confdir + "/urls"
+	datadir := os.Getenv("HOME") + datadir
+
+	// create urls file if it doesn't exist
+	_, err := os.Stat(urlsfile)
+	if os.IsNotExist(err) {
 		file, err := os.Create(urlsfile)
 		if err != nil {
 			panic(err)
@@ -56,15 +72,15 @@ func Init() []*gofeed.Feed {
 		defer file.Close()
 	}
 
-	dat, err := ioutil.ReadFile(urlsfile)
+	// create data directory if it doesn't exist
+	os.MkdirAll(datadir, os.ModePerm)
+}
 
-	if err != nil {
-		panic(err)
-	}
+func Init() []*gofeed.Feed {
+	CreateFiles()
+	urls := GetUrls()
 
-	urls = strings.Split(string(dat), "\n")
-
-	var feeds []*gofeed.Feed;
+	var feeds []*gofeed.Feed
 
 	for _, url := range urls {
 		if len(url) > 0 {
@@ -100,6 +116,9 @@ func OpenInPlayer(url string) {
  * sync all feeds (download files)
  */
 func Sync() {
+	CreateFiles()
+	GetUrls()
+
 	for _, url := range urls {
 		if len(url) < 1 {
 			continue
