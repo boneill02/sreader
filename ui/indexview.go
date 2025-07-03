@@ -1,12 +1,12 @@
 package ui
 
 import (
-	"github.com/mmcdole/gofeed"
 	"github.com/marcusolsson/tui-go"
+	"github.com/mmcdole/gofeed"
 )
 
 /**
- * initialize the index view (first thing you see, view 0)
+ * initialize the index view (first thing you see, view 0).
  */
 func InitIndexView(feeds []*gofeed.Feed) {
 	maintable = tui.NewTable(0, 0)
