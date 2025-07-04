@@ -107,13 +107,28 @@ func Sync() {
 		if len(url) < 1 {
 			continue
 		}
-		resp, err := http.Get(url)
+
+		// Get file name for URL
+		urlsum := sha1.Sum([]byte(url))
+		filename := os.Getenv("HOME") + datadir + "/" + hex.EncodeToString(urlsum[:])
+
+		// Create request to fetch the feed
+		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			panic(err)
 		}
 
-		urlsum := sha1.Sum([]byte(url))
-		filename := os.Getenv("HOME") + datadir + "/" + hex.EncodeToString(urlsum[:])
+		// Try to read the last modified time from the local file, if it exists
+		if fi, err := os.Stat(filename); err == nil {
+			modTime := fi.ModTime().UTC().Format(http.TimeFormat)
+			req.Header.Set("If-Modified-Since", modTime)
+		}
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			panic(err)
+		}
+
 		out, err := os.Create(filename)
 		if err != nil {
 			panic(err)
@@ -124,7 +139,7 @@ func Sync() {
 			if err != nil {
 				panic(err)
 			}
-		} else {
+		} else if resp.StatusCode != http.StatusNotModified {
 			panic("Failed to download feed \"" + url + "\": " + resp.Status)
 		}
 	}
