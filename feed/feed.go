@@ -3,11 +3,11 @@ package feed
 import (
 	"crypto/sha1"
 	"encoding/hex"
-	"os"
-	"os/exec"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/mmcdole/gofeed"
@@ -16,6 +16,7 @@ import (
 const confdir string = "/.config/sreader"
 const datadir string = "/.local/share/sreader"
 const idxfile string = datadir + "/index"
+
 var urls []string
 
 /**
@@ -39,7 +40,7 @@ func GetFeed(url string) *gofeed.Feed {
 	return feed
 }
 
-func Init() []*gofeed.Feed {
+func Init() {
 	/* set configuration stuff */
 	urlsfile := os.Getenv("HOME") + confdir + "/urls"
 
@@ -48,7 +49,7 @@ func Init() []*gofeed.Feed {
 	os.MkdirAll(os.Getenv("HOME") + datadir, os.ModePerm)
 
 	_, err := os.Stat(urlsfile)
-    if os.IsNotExist(err) {
+	if os.IsNotExist(err) {
 		file, err := os.Create(urlsfile)
 		if err != nil {
 			panic(err)
@@ -63,6 +64,7 @@ func Init() []*gofeed.Feed {
 	}
 
 	urls = strings.Split(string(dat), "\n")
+}
 
 func LoadFeeds() []*gofeed.Feed {
 	var feeds []*gofeed.Feed
