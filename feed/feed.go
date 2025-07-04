@@ -115,9 +115,14 @@ func Sync() {
 		if err != nil {
 			panic(err)
 		}
-		_, err = io.Copy(out, resp.Body)
-		if err != nil {
-			panic(err)
+
+		if resp.StatusCode == http.StatusOK {
+			_, err = io.Copy(out, resp.Body)
+			if err != nil {
+				panic(err)
+			}
+		} else {
+			panic("Failed to download feed \"" + url + "\": " + resp.Status)
 		}
 	}
 }
