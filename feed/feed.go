@@ -4,7 +4,6 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -20,7 +19,28 @@ const idxfile string = datadir + "/index"
 var urls []string
 
 /**
- * parse feed from data directory
+ * Create all necessary files and directories if they don't exist yet
+ */
+func CreateFiles() {
+	urlsfile := os.Getenv("HOME") + confdir + "/urls"
+	datadir := os.Getenv("HOME") + datadir
+
+	// create urls file if it doesn't exist
+	_, err := os.Stat(urlsfile)
+	if os.IsNotExist(err) {
+		file, err := os.Create(urlsfile)
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+	}
+
+	// create data directory if it doesn't exist
+	os.MkdirAll(datadir, os.ModePerm)
+}
+
+/**
+ * Parse feed from data directory
  */
 func GetFeed(url string) *gofeed.Feed {
 	urlsum := sha1.Sum([]byte(url))
@@ -43,11 +63,6 @@ func GetFeed(url string) *gofeed.Feed {
 func Init() {
 	/* set configuration stuff */
 	urlsfile := os.Getenv("HOME") + confdir + "/urls"
-
-	/* this won't do anything if the files exist already */
-	os.MkdirAll(os.Getenv("HOME") + confdir, os.ModePerm)
-	os.MkdirAll(os.Getenv("HOME") + datadir, os.ModePerm)
-
 	_, err := os.Stat(urlsfile)
 	if os.IsNotExist(err) {
 		file, err := os.Create(urlsfile)
@@ -56,13 +71,10 @@ func Init() {
 		}
 		defer file.Close()
 	}
-
-	dat, err := ioutil.ReadFile(urlsfile)
-
+	dat, err := os.ReadFile(urlsfile)
 	if err != nil {
 		panic(err)
 	}
-
 	urls = strings.Split(string(dat), "\n")
 }
 
@@ -78,7 +90,11 @@ func LoadFeeds() []*gofeed.Feed {
 	return feeds
 }
 
-/* open feed in default browser */
+/**
+ * Open feed in web browser
+ * Uses the BROWSER environment variable to determine which browser to use.
+ * If BROWSER is not set, it will not open the URL.
+ */
 func OpenInBrowser(url string) {
 	browser := os.Getenv("BROWSER")
 	if browser != "" {
@@ -87,7 +103,9 @@ func OpenInBrowser(url string) {
 	}
 }
 
-/* open feed in video player */
+/**
+ * Open feed in video player
+ */
 func OpenInPlayer(url string) {
 	player := os.Getenv("PLAYER")
 
@@ -100,7 +118,7 @@ func OpenInPlayer(url string) {
 }
 
 /**
- * sync all feeds (download files)
+ * Sync all feeds (download files). Will panic if any error occurs.
  */
 func Sync() {
 	for _, url := range urls {

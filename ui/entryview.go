@@ -2,9 +2,9 @@ package ui
 
 import (
 	"github.com/k3a/html2text"
-	"github.com/mmcdole/gofeed"
 	"github.com/marcusolsson/tui-go"
 	"github.com/marcusolsson/tui-go/wordwrap"
+	"github.com/mmcdole/gofeed"
 )
 
 /**
@@ -18,7 +18,7 @@ func InitEntryView() {
 }
 
 /**
- * update entryview when a different one is opened
+ * update entryview when a different entry is opened
  */
 func UpdateEntryView(feed *gofeed.Feed, item *gofeed.Item) {
 	metatext := "Feed: " + feed.Title + "\nTitle: " + item.Title + "\nDate: " + item.Published + "\nLink: " + item.Link

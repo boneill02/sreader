@@ -1,4 +1,7 @@
-# sreader: A Simple TUI Atom and RSS Feed Reader
+# sreader: A TUI Atom and RSS Feed Reader
+
+[![Build Status](https://github.com/boneill02/sreader/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/boneill02/sreader/actions/workflows/go.yml).
+[![Dependabot Active](https://img.shields.io/badge/dependabot-active-brightgreen?style=flat-square&logo=dependabot)](https://github.com/boneill02/sreader/security/dependabot)
 
 ## Usage
 
@@ -9,18 +12,19 @@
 
 ## Features
 
-- [X] Simple, clean TUI interface
-- [X] Open in browser or media player
-- [X] Vim keys
+- [X] Clean, intuitive TUI interface
+- [X] Open entries in browser or media player
+- [X] Vim key bindings
 - [X] XDG Base Directory Specification compliant
 
 ## Keybindings
 
 sreader uses Vim-like keybindings by default.
 
-* `l`: Open selected list entry in sreader
-* `j`: Select next list entry
-* `k`: Select previous list entry
+* `h`: Go back
+* `j`: Select next item
+* `k`: Select previous item
+* `l`: Open selected item
 * `o`: Open selected list entry in `$BROWSER`
 * `v`: Open selected list entry in `$PLAYER` (or [mpv](https://mpv.io/) if env
   variable is empty)

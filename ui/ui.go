@@ -2,8 +2,8 @@ package ui
 
 import (
 	"github.com/boneill02/sreader/feed"
-	"github.com/mmcdole/gofeed"
 	"github.com/marcusolsson/tui-go"
+	"github.com/mmcdole/gofeed"
 )
 
 var ui tui.UI
@@ -21,7 +21,7 @@ var view int // keep track of current view: mainview=0,feedview=1,entryview=2
 const titlestr string = "sreader: "
 
 /**
- * create a ui based on feeds
+ * Create a ui based on the given feeds.
  */
 func Init(feeds []*gofeed.Feed) tui.UI {
 	title = tui.NewLabel(titlestr)
@@ -46,7 +46,11 @@ func Init(feeds []*gofeed.Feed) tui.UI {
 	return ui
 }
 
+/**
+ * Initialize keybindings for the UI
+ */
 func SetKeybindings(ui tui.UI, feeds []*gofeed.Feed) {
+	// Go to previous view or quit if in indexview
 	ui.SetKeybinding("h", func() {
 		switch view {
 		case 0:
@@ -62,17 +66,21 @@ func SetKeybindings(ui tui.UI, feeds []*gofeed.Feed) {
 		}
 	})
 
+	// Scroll down in content area
 	ui.SetKeybinding("j", func() {
-		if (view == 2) {
+		if view == 2 {
 			contentarea.Scroll(0, 1)
 		}
 	})
+
+	// Scroll up in content area
 	ui.SetKeybinding("k", func() {
-		if (view == 2) {
+		if view == 2 {
 			contentarea.Scroll(0, -1)
 		}
 	})
 
+	// Enter feedview for selected feed or entryview for selected entry
 	ui.SetKeybinding("l", func() {
 		switch view {
 		case 0:
@@ -89,21 +97,25 @@ func SetKeybindings(ui tui.UI, feeds []*gofeed.Feed) {
 		}
 	})
 
+	// Sync feeds
 	ui.SetKeybinding("r", func() {
 		feed.Sync()
 	})
 
+	// Open in browser
 	ui.SetKeybinding("o", func() {
 		if view != 0 {
 			feed.OpenInBrowser(feeds[maintable.Selected()].Items[feedtable.Selected()].Link)
 		}
 	})
 
+	// Open in player
 	ui.SetKeybinding("v", func() {
 		if view != 0 {
 			feed.OpenInPlayer(feeds[maintable.Selected()].Items[feedtable.Selected()].Link)
 		}
 	})
 
+	// Quit
 	ui.SetKeybinding("q", func() { ui.Quit() })
 }

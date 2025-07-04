@@ -1,12 +1,12 @@
 package ui
 
 import (
-	"github.com/mmcdole/gofeed"
 	"github.com/marcusolsson/tui-go"
+	"github.com/mmcdole/gofeed"
 )
 
 /**
- * Initialize the feed view (list of entries in feed, view 1)
+ * Initialize the feed view (list of entries in feed, view 1).
  */
 func InitFeedView() {
 	feedtable = tui.NewTable(0, 0)
@@ -16,7 +16,7 @@ func InitFeedView() {
 }
 
 /**
- * Update feed view for new feed
+ * Update feed view when the feed is changed or a different feed is opened.
  */
 func UpdateFeedView(feed *gofeed.Feed) {
 	items := feed.Items
