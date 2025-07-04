@@ -33,12 +33,14 @@ func main() {
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
 		case "sync":
+			feed.Init()
 			feed.Sync()
 			return
 		}
 	}
 
-	feeds := feed.Init()
+	feed.Init()
+	feeds := feed.LoadFeeds()
 	tui := ui.Init(feeds)
 	err := tui.Run()
 	if err != nil {

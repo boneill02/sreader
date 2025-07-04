@@ -64,7 +64,8 @@ func Init() []*gofeed.Feed {
 
 	urls = strings.Split(string(dat), "\n")
 
-	var feeds []*gofeed.Feed;
+func LoadFeeds() []*gofeed.Feed {
+	var feeds []*gofeed.Feed
 
 	for _, url := range urls {
 		if len(url) > 0 {
