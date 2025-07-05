@@ -9,12 +9,9 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/boneill02/sreader/config"
 	"github.com/mmcdole/gofeed"
 )
-
-const confdir string = "/.config/sreader"
-const datadir string = "/.local/share/sreader"
-const idxfile string = datadir + "/index"
 
 var urls []string
 
@@ -22,8 +19,7 @@ var urls []string
  * Create all necessary files and directories if they don't exist yet
  */
 func CreateFiles() {
-	urlsfile := os.Getenv("HOME") + confdir + "/urls"
-	datadir := os.Getenv("HOME") + datadir
+	urlsfile := os.Getenv("HOME") + config.Confdir + "/urls"
 
 	// create urls file if it doesn't exist
 	_, err := os.Stat(urlsfile)
@@ -36,7 +32,7 @@ func CreateFiles() {
 	}
 
 	// create data directory if it doesn't exist
-	os.MkdirAll(datadir, os.ModePerm)
+	os.MkdirAll(os.Getenv("HOME") + config.Datadir, os.ModePerm)
 }
 
 /**
@@ -44,7 +40,7 @@ func CreateFiles() {
  */
 func GetFeed(url string) *gofeed.Feed {
 	urlsum := sha1.Sum([]byte(url))
-	file, err := os.Open(os.Getenv("HOME") + datadir + "/" + hex.EncodeToString(urlsum[:]))
+	file, err := os.Open(os.Getenv("HOME") + config.Datadir + "/" + hex.EncodeToString(urlsum[:]))
 
 	if err != nil {
 		panic(err)
@@ -62,7 +58,7 @@ func GetFeed(url string) *gofeed.Feed {
 
 func Init() {
 	/* set configuration stuff */
-	urlsfile := os.Getenv("HOME") + confdir + "/urls"
+	urlsfile := os.Getenv("HOME") + config.Confdir + "/urls"
 	_, err := os.Stat(urlsfile)
 	if os.IsNotExist(err) {
 		file, err := os.Create(urlsfile)
@@ -95,24 +91,15 @@ func LoadFeeds() []*gofeed.Feed {
  * Uses the BROWSER environment variable to determine which browser to use.
  * If BROWSER is not set, it will not open the URL.
  */
-func OpenInBrowser(url string) {
-	browser := os.Getenv("BROWSER")
-	if browser != "" {
-		cmd := exec.Command(browser, url)
-		cmd.Start()
-	}
+func OpenInBrowser(url string, browser string) {
+	cmd := exec.Command(browser, url)
+	cmd.Start()
 }
 
 /**
  * Open feed in video player
  */
-func OpenInPlayer(url string) {
-	player := os.Getenv("PLAYER")
-
-	if player == "" {
-		player = "mpv" // default player
-	}
-
+func OpenInPlayer(url string, player string) {
 	cmd := exec.Command("setsid", "nohup", player, url)
 	cmd.Start()
 }
@@ -128,7 +115,7 @@ func Sync() {
 
 		// Get file name for URL
 		urlsum := sha1.Sum([]byte(url))
-		filename := os.Getenv("HOME") + datadir + "/" + hex.EncodeToString(urlsum[:])
+		filename := os.Getenv("HOME") + config.Datadir + "/" + hex.EncodeToString(urlsum[:])
 
 		// Create request to fetch the feed
 		req, err := http.NewRequest("GET", url, nil)
