@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/k3a/html2text"
 	"github.com/mmcdole/gofeed"
 )
@@ -21,6 +22,11 @@ const (
 	mainView viewState = iota
 	feedView
 	entryView
+)
+
+var (
+	listDelegate list.DefaultDelegate
+	appStyle     lipgloss.Style
 )
 
 type feedItem struct {
@@ -171,6 +177,7 @@ func (m *model) updateEntryList() {
 		}
 	}
 	m.entryList.SetItems(entryItems)
+	m.entryList.SetDelegate(listDelegate)
 	m.entryList.Select(0)
 	m.currEntry = 0
 }
@@ -198,11 +205,42 @@ func (m model) View() string {
 		s += m.viewport.View()
 	}
 	s += "\n[h] back [l] enter [j/k] move [q] quit [r] sync [o] open [v] play"
-	return s
+	return appStyle.Render(s)
 }
 
 func Init(feeds []*gofeed.Feed, conf *config.Config) *tea.Program {
 	width, height := 80, 24 // default
+	bg := lipgloss.Color(conf.BG)
+	fg := lipgloss.Color(conf.FG)
+	selectedTitleFG := lipgloss.Color(conf.SelectedTitleFG)
+	selectedTitleBG := lipgloss.Color(conf.SelectedTitleBG)
+	selectedDescFG := lipgloss.Color(conf.SelectedDescFG)
+	selectedDescBG := lipgloss.Color(conf.SelectedDescBG)
+	titleFG := lipgloss.Color(conf.TitleFG)
+	titleBG := lipgloss.Color(conf.TitleBG)
+	descFG := lipgloss.Color(conf.DescFG)
+	descBG := lipgloss.Color(conf.DescBG)
+
+	// List styles
+	listDelegate = list.NewDefaultDelegate()
+	listDelegate.Styles.NormalTitle = lipgloss.NewStyle().
+		Foreground(titleFG).
+		Background(titleBG)
+	listDelegate.Styles.SelectedTitle = lipgloss.NewStyle().
+		Foreground(selectedTitleFG).
+		Background(selectedTitleBG)
+	listDelegate.Styles.NormalDesc = lipgloss.NewStyle().
+		Foreground(descFG).
+		Background(descBG)
+	listDelegate.Styles.SelectedDesc = lipgloss.NewStyle().
+		Foreground(selectedDescFG).
+		Background(selectedDescBG)
+
 	m := NewModel(feeds, conf, width, height)
+	m.feedList.SetDelegate(listDelegate)
+
+	appStyle = lipgloss.NewStyle().
+		Foreground(fg).
+		Background(bg)
 	return tea.NewProgram(m, tea.WithAltScreen())
 }
