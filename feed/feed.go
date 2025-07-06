@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 
 	"github.com/boneill02/sreader/config"
 	"github.com/mmcdole/gofeed"
@@ -32,7 +33,7 @@ func CreateFiles() {
 	}
 
 	// create data directory if it doesn't exist
-	os.MkdirAll(os.Getenv("HOME") + config.Datadir, os.ModePerm)
+	os.MkdirAll(os.Getenv("HOME")+config.Datadir, os.ModePerm)
 }
 
 /**
@@ -108,44 +109,52 @@ func OpenInPlayer(url string, player string) {
  * Sync all feeds (download files). Will panic if any error occurs.
  */
 func Sync() {
+	var wg sync.WaitGroup
 	for _, url := range urls {
 		if len(url) < 1 {
 			continue
 		}
 
-		// Get file name for URL
-		urlsum := sha1.Sum([]byte(url))
-		filename := os.Getenv("HOME") + config.Datadir + "/" + hex.EncodeToString(urlsum[:])
+		wg.Add(1)
+		go func(url string) {
+			defer wg.Done()
 
-		// Create request to fetch the feed
-		req, err := http.NewRequest("GET", url, nil)
-		if err != nil {
-			panic(err)
-		}
+			// Get file name for URL
+			urlsum := sha1.Sum([]byte(url))
+			filename := os.Getenv("HOME") + config.Datadir + "/" + hex.EncodeToString(urlsum[:])
 
-		// Try to read the last modified time from the local file, if it exists
-		if fi, err := os.Stat(filename); err == nil {
-			modTime := fi.ModTime().UTC().Format(http.TimeFormat)
-			req.Header.Set("If-Modified-Since", modTime)
-		}
-
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			panic(err)
-		}
-
-		out, err := os.Create(filename)
-		if err != nil {
-			panic(err)
-		}
-
-		if resp.StatusCode == http.StatusOK {
-			_, err = io.Copy(out, resp.Body)
+			// Create request to fetch the feed
+			req, err := http.NewRequest("GET", url, nil)
 			if err != nil {
 				panic(err)
 			}
-		} else if resp.StatusCode != http.StatusNotModified {
-			panic("Failed to download feed \"" + url + "\": " + resp.Status)
-		}
+
+			// Try to read the last modified time from the local file, if it exists
+			if fi, err := os.Stat(filename); err == nil {
+				modTime := fi.ModTime().UTC().Format(http.TimeFormat)
+				req.Header.Set("If-Modified-Since", modTime)
+			}
+
+			resp, err := http.DefaultClient.Do(req)
+			if err != nil {
+				panic(err)
+			}
+
+			out, err := os.Create(filename)
+			if err != nil {
+				panic(err)
+			}
+
+			if resp.StatusCode == http.StatusOK {
+				_, err = io.Copy(out, resp.Body)
+				if err != nil {
+					panic(err)
+				}
+			} else if resp.StatusCode != http.StatusNotModified {
+				panic("Failed to download feed \"" + url + "\": " + resp.Status)
+			}
+		}(url)
 	}
+
+	wg.Wait()
 }
