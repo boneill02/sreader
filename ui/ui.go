@@ -237,8 +237,8 @@ func (m model) View() string {
 /**
  * Converts HTML to plain text and wraps lines at the specified width.
  */
-func htmlTruncate(html string, width int) string {
-	s := html2text.HTML2Text(html)
+func htmlTruncate(content string, width int) string {
+	s := html2text.HTML2Text(content)
 	var result []rune
 	lineLen := 0
 	isLink := false
@@ -289,7 +289,11 @@ func newModel(feeds []*gofeed.Feed, conf *config.Config, width, height int) mode
 	entryItems := []list.Item{}
 	if len(feeds) > 0 {
 		for _, item := range feeds[0].Items {
-			entryItems = append(entryItems, feedItem{title: item.Title, desc: item.Description, link: item.Link})
+			entryItems = append(entryItems, feedItem{
+				title: item.Title,
+				desc: item.Description,
+				link: item.Link
+			})
 		}
 	}
 	entryList := list.New(entryItems, list.NewDefaultDelegate(), width, height)
