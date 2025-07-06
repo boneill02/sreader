@@ -45,7 +45,7 @@ type model struct {
 	view      viewState
 	feedList  list.Model
 	entryList list.Model
-	viewport  viewport.Model
+	entryView viewport.Model
 	currFeed  int
 	currEntry int
 	width     int
@@ -80,7 +80,7 @@ func NewModel(feeds []*gofeed.Feed, conf *config.Config, width, height int) mode
 		view:      mainView,
 		feedList:  feedList,
 		entryList: entryList,
-		viewport:  vp,
+		entryView: vp,
 		currFeed:  0,
 		currEntry: 0,
 		width:     width,
@@ -99,8 +99,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width, m.height = msg.Width, msg.Height
 		m.feedList.SetSize(msg.Width, msg.Height)
 		m.entryList.SetSize(msg.Width, msg.Height)
-		m.viewport.Width = msg.Width
-		m.viewport.Height = msg.Height
+		m.entryView.Width = msg.Width
+		m.entryView.Height = msg.Height
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q":
@@ -132,7 +132,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case feedView:
 				m.entryList, _ = m.entryList.Update(msg)
 			case entryView:
-				m.viewport.ScrollDown(1)
+				m.entryView.ScrollDown(1)
 			}
 		case "k":
 			switch m.view {
@@ -141,7 +141,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case feedView:
 				m.entryList, _ = m.entryList.Update(msg)
 			case entryView:
-				m.viewport.ScrollUp(1)
+				m.entryView.ScrollUp(1)
 			}
 		case "r":
 			feed.Sync()
@@ -162,7 +162,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case feedView:
 				m.entryList, _ = m.entryList.Update(msg)
 			case entryView:
-				m.viewport, _ = m.viewport.Update(msg)
+				m.entryView, _ = m.entryView.Update(msg)
 			}
 		}
 	}
@@ -189,8 +189,8 @@ func (m *model) updateViewport() {
 		content += "\nLink: " + m.feeds[m.currFeed].Items[m.currEntry].Link
 		content += "\nDescription:\n" + html2text.HTML2Text(m.feeds[m.currFeed].Items[m.currEntry].Description)
 		content += "\n\nContent:\n" + html2text.HTML2Text(m.feeds[m.currFeed].Items[m.currEntry].Content)
-		m.viewport.SetContent(content)
-		m.viewport.GotoTop()
+		m.entryView.SetContent(content)
+		m.entryView.GotoTop()
 	}
 }
 
@@ -202,7 +202,7 @@ func (m model) View() string {
 	case feedView:
 		s += m.entryList.View()
 	case entryView:
-		s += m.viewport.View()
+		s += m.entryView.View()
 	}
 	s += "\n[h] back [l] enter [j/k] move [q] quit [r] sync [o] open [v] play"
 	return appStyle.Render(lipgloss.Place(m.width, m.height, lipgloss.Left, lipgloss.Top, s))
@@ -210,6 +210,8 @@ func (m model) View() string {
 
 func Init(feeds []*gofeed.Feed, conf *config.Config) *tea.Program {
 	width, height := 500, 24 // default
+
+	// Styles
 	bg := lipgloss.Color(conf.BG)
 	fg := lipgloss.Color(conf.FG)
 	selectedTitleFG := lipgloss.Color(conf.SelectedTitleFG)
@@ -221,7 +223,7 @@ func Init(feeds []*gofeed.Feed, conf *config.Config) *tea.Program {
 	descFG := lipgloss.Color(conf.DescFG)
 	descBG := lipgloss.Color(conf.DescBG)
 
-	// List styles
+	// Load list delegate with styles
 	listDelegate = list.NewDefaultDelegate()
 	listDelegate.Styles.NormalTitle = lipgloss.NewStyle().
 		Foreground(titleFG).
