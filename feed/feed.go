@@ -99,26 +99,6 @@ func Sync() {
 }
 
 /**
- * Create all necessary files and directories if they don't exist yet
- */
-func createFiles() {
-	urlsfile := os.Getenv("HOME") + config.Confdir + "/urls"
-
-	// create urls file if it doesn't exist
-	_, err := os.Stat(urlsfile)
-	if os.IsNotExist(err) {
-		file, err := os.Create(urlsfile)
-		if err != nil {
-			panic(err)
-		}
-		defer file.Close()
-	}
-
-	// create data directory if it doesn't exist
-	os.MkdirAll(os.Getenv("HOME")+config.Datadir, os.ModePerm)
-}
-
-/**
  * Parse feed from data directory
  */
 func getFeed(url string) *gofeed.Feed {
