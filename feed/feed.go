@@ -1,14 +1,17 @@
 package feed
 
 import (
+	"context"
 	"crypto/sha1"
 	"encoding/hex"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strings"
 	"sync"
+	"syscall"
 
 	"github.com/boneill02/sreader/config"
 	"github.com/mmcdole/gofeed"
@@ -109,52 +112,85 @@ func OpenInPlayer(url string, player string) {
  * Sync all feeds (download files). Will panic if any error occurs.
  */
 func Sync() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	var wg sync.WaitGroup
+
+	// Listen for OS signals to gracefully shut down
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	// Start workers
 	for _, url := range urls {
 		if len(url) < 1 {
 			continue
 		}
 
 		wg.Add(1)
-		go func(url string) {
-			defer wg.Done()
-
-			// Get file name for URL
-			urlsum := sha1.Sum([]byte(url))
-			filename := os.Getenv("HOME") + config.Datadir + "/" + hex.EncodeToString(urlsum[:])
-
-			// Create request to fetch the feed
-			req, err := http.NewRequest("GET", url, nil)
-			if err != nil {
-				panic(err)
-			}
-
-			// Try to read the last modified time from the local file, if it exists
-			if fi, err := os.Stat(filename); err == nil {
-				modTime := fi.ModTime().UTC().Format(http.TimeFormat)
-				req.Header.Set("If-Modified-Since", modTime)
-			}
-
-			resp, err := http.DefaultClient.Do(req)
-			if err != nil {
-				panic(err)
-			}
-
-			out, err := os.Create(filename)
-			if err != nil {
-				panic(err)
-			}
-
-			if resp.StatusCode == http.StatusOK {
-				_, err = io.Copy(out, resp.Body)
-				if err != nil {
-					panic(err)
-				}
-			} else if resp.StatusCode != http.StatusNotModified {
-				panic("Failed to download feed \"" + url + "\": " + resp.Status)
-			}
-		}(url)
+		go syncWorker(url, &wg, ctx)
 	}
 
+	go func() {
+		<-sigChan
+		cancel() // Cancel context when signal received
+	}()
+
 	wg.Wait()
+}
+
+func syncWorker(url string, wg *sync.WaitGroup, ctx context.Context) {
+	defer wg.Done()
+
+	// Get file name for URL
+	urlsum := sha1.Sum([]byte(url))
+	filename := os.Getenv("HOME") + config.Datadir + "/" + hex.EncodeToString(urlsum[:])
+	tmpFile := filename + ".tmp"
+
+	// Create request to fetch the feed
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		println("Failed to create request for URL:", url, "Error:", err)
+		return
+	}
+
+	// Try to read the last modified time from the local file, if it exists
+	if fi, err := os.Stat(filename); err == nil {
+		modTime := fi.ModTime().UTC().Format(http.TimeFormat)
+		req.Header.Set("If-Modified-Since", modTime)
+	}
+
+	// Do get request
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+
+	// Create the temporary file
+	out, err := os.Create(tmpFile)
+	if err != nil {
+		panic(err)
+	}
+
+	// Copy response body to the temporary file
+	if resp.StatusCode == http.StatusOK {
+		_, err = io.Copy(out, resp.Body)
+		if err != nil {
+			panic(err)
+		}
+	} else if resp.StatusCode != http.StatusNotModified {
+		panic("Failed to download feed \"" + url + "\": " + resp.Status)
+	}
+
+	select {
+	case <-ctx.Done():
+		// Context was cancelled, clean up and exit
+		println("Sync cancelled for URL:", url)
+		os.Remove(tmpFile) // Clean up temporary file
+		return
+	default:
+		// Move temporary file to the final destination
+		if err := os.Rename(tmpFile, filename); err != nil {
+			panic(err)
+		}
+	}
 }
