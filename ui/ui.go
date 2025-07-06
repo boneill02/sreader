@@ -209,7 +209,7 @@ func (m model) View() string {
 }
 
 func Init(feeds []*gofeed.Feed, conf *config.Config) *tea.Program {
-	width, height := 80, 24 // default
+	width, height := 500, 24 // default
 	bg := lipgloss.Color(conf.BG)
 	fg := lipgloss.Color(conf.FG)
 	selectedTitleFG := lipgloss.Color(conf.SelectedTitleFG)
@@ -225,22 +225,26 @@ func Init(feeds []*gofeed.Feed, conf *config.Config) *tea.Program {
 	listDelegate = list.NewDefaultDelegate()
 	listDelegate.Styles.NormalTitle = lipgloss.NewStyle().
 		Foreground(titleFG).
-		Background(titleBG)
+		Background(titleBG).
+		Width(width)
 	listDelegate.Styles.SelectedTitle = lipgloss.NewStyle().
 		Foreground(selectedTitleFG).
-		Background(selectedTitleBG)
+		Background(selectedTitleBG).
+		Width(width)
 	listDelegate.Styles.NormalDesc = lipgloss.NewStyle().
 		Foreground(descFG).
-		Background(descBG)
+		Background(descBG).
+		Width(width)
 	listDelegate.Styles.SelectedDesc = lipgloss.NewStyle().
 		Foreground(selectedDescFG).
-		Background(selectedDescBG)
+		Background(selectedDescBG).
+		Width(width)
 
 	m := NewModel(feeds, conf, width, height)
 	m.feedList.SetDelegate(listDelegate)
-
 	appStyle = lipgloss.NewStyle().
 		Foreground(fg).
-		Background(bg)
+		Background(bg).
+		Width(width)
 	return tea.NewProgram(m, tea.WithAltScreen())
 }
