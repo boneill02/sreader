@@ -20,57 +20,6 @@ import (
 
 var urls []string
 
-/**
- * Create all necessary files and directories if they don't exist yet
- */
-func CreateFiles() {
-	urlsfile := os.Getenv("HOME") + config.Confdir + "/urls"
-
-	// create urls file if it doesn't exist
-	_, err := os.Stat(urlsfile)
-	if os.IsNotExist(err) {
-		file, err := os.Create(urlsfile)
-		if err != nil {
-			panic(err)
-		}
-		defer file.Close()
-	}
-
-	// create data directory if it doesn't exist
-	os.MkdirAll(os.Getenv("HOME")+config.Datadir, os.ModePerm)
-}
-
-/**
- * Parse feed from data directory
- */
-func GetFeed(url string) *gofeed.Feed {
-	urlsum := sha1.Sum([]byte(url))
-	file, err := os.Open(os.Getenv("HOME") + config.Datadir + "/" + hex.EncodeToString(urlsum[:]))
-
-	if err != nil {
-		panic(err)
-	}
-
-	fp := gofeed.NewParser()
-	feed, err := fp.Parse(file)
-
-	// Unescape HTML entities
-	feed.Description = html.UnescapeString(feed.Description)
-	feed.Title = html.UnescapeString(feed.Title)
-
-	for _, item := range feed.Items {
-		item.Title = html.UnescapeString(item.Title)
-		item.Description = html.UnescapeString(item.Description)
-		item.Content = html.UnescapeString(item.Content)
-	}
-
-	if err != nil {
-		panic(err)
-	}
-
-	return feed
-}
-
 func Init() {
 	/* set configuration stuff */
 	urlsfile := os.Getenv("HOME") + config.Confdir + "/urls"
@@ -94,7 +43,7 @@ func LoadFeeds() []*gofeed.Feed {
 
 	for _, url := range urls {
 		if len(url) > 0 {
-			feeds = append(feeds, GetFeed(url))
+			feeds = append(feeds, getFeed(url))
 		}
 	}
 
@@ -147,6 +96,57 @@ func Sync() {
 	}()
 
 	wg.Wait()
+}
+
+/**
+ * Create all necessary files and directories if they don't exist yet
+ */
+func createFiles() {
+	urlsfile := os.Getenv("HOME") + config.Confdir + "/urls"
+
+	// create urls file if it doesn't exist
+	_, err := os.Stat(urlsfile)
+	if os.IsNotExist(err) {
+		file, err := os.Create(urlsfile)
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+	}
+
+	// create data directory if it doesn't exist
+	os.MkdirAll(os.Getenv("HOME")+config.Datadir, os.ModePerm)
+}
+
+/**
+ * Parse feed from data directory
+ */
+func getFeed(url string) *gofeed.Feed {
+	urlsum := sha1.Sum([]byte(url))
+	file, err := os.Open(os.Getenv("HOME") + config.Datadir + "/" + hex.EncodeToString(urlsum[:]))
+
+	if err != nil {
+		panic(err)
+	}
+
+	fp := gofeed.NewParser()
+	feed, err := fp.Parse(file)
+
+	// Unescape HTML entities
+	feed.Description = html.UnescapeString(feed.Description)
+	feed.Title = html.UnescapeString(feed.Title)
+
+	for _, item := range feed.Items {
+		item.Title = html.UnescapeString(item.Title)
+		item.Description = html.UnescapeString(item.Description)
+		item.Content = html.UnescapeString(item.Content)
+	}
+
+	if err != nil {
+		panic(err)
+	}
+
+	return feed
 }
 
 func syncWorker(url string, wg *sync.WaitGroup, ctx context.Context) {
