@@ -59,6 +59,7 @@ func NewModel(feeds []*gofeed.Feed, conf *config.Config, width, height int) mode
 	}
 	feedList := list.New(feedItems, list.NewDefaultDelegate(), width, height)
 	feedList.Title = "Feeds"
+	feedList.SetShowHelp(false)
 
 	entryItems := []list.Item{}
 	if len(feeds) > 0 {
@@ -68,6 +69,7 @@ func NewModel(feeds []*gofeed.Feed, conf *config.Config, width, height int) mode
 	}
 	entryList := list.New(entryItems, list.NewDefaultDelegate(), width, height)
 	entryList.Title = "Entries"
+	entryList.SetShowHelp(false)
 
 	vp := viewport.New(width, height)
 	if len(feeds) > 0 && len(feeds[0].Items) > 0 {
