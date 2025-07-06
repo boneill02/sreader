@@ -205,7 +205,7 @@ func (m model) View() string {
 		s += m.viewport.View()
 	}
 	s += "\n[h] back [l] enter [j/k] move [q] quit [r] sync [o] open [v] play"
-	return appStyle.Render(s)
+	return appStyle.Render(lipgloss.Place(m.width, m.height, lipgloss.Left, lipgloss.Top, s))
 }
 
 func Init(feeds []*gofeed.Feed, conf *config.Config) *tea.Program {
