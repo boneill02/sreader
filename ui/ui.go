@@ -175,7 +175,10 @@ func (m *model) updateEntryList() {
 	entryItems := []list.Item{}
 	if m.currFeed < len(m.feeds) {
 		for _, item := range m.feeds[m.currFeed].Items {
-			entryItems = append(entryItems, feedItem{title: item.Title, desc: item.Description, link: item.Link})
+			entryItems = append(entryItems, feedItem{
+				title: item.Title,
+				link:  item.Link,
+			})
 		}
 	}
 	m.entryList.SetItems(entryItems)
