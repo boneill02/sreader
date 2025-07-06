@@ -209,7 +209,7 @@ func (m model) View() string {
 }
 
 func Init(feeds []*gofeed.Feed, conf *config.Config) *tea.Program {
-	width, height := 500, 24 // default
+	width, height := 500, 24 // width set to 500, hopefully enough for most screens
 
 	// Styles
 	bg := lipgloss.Color(conf.BG)
