@@ -22,14 +22,14 @@
 
 sreader uses Vim-like keybindings by default.
 
-* `h`: Go back
-* `j`: Select next item
-* `k`: Select previous item
-* `l`: Open selected item
-* `o`: Open selected list entry in web browser
-* `v`: Open selected list entry in video player
-* `r`: Refresh feeds
-* `q`: Quit
+- `h`: Go back
+- `j`: Select next item
+- `k`: Select previous item
+- `l`: Open selected item
+- `o`: Open selected list entry in web browser
+- `v`: Open selected list entry in video player
+- `r`: Refresh feeds
+- `q`: Quit
 
 ## Configuration
 
@@ -43,18 +43,18 @@ are also not set, `sreader` will default to `mpv` and `firefox` respectively.
 
 The following settings are supported (colors are represented by hex strings):
 
-* `FG`: Primary text color for non-selected list items (and entry contents)
-* `BG`: Primary background color for non-selected list items (and entry contents)
-* `TitleFG`: Non-selected list entry title foreground color
-* `TitleBG`: Non-selected list entry title background color
-* `SelectedTitleFG`: Selected list entry title foreground color
-* `SelectedTitleBG`: Selected list entry title background color
-* `DescFG`: Non-selected list entry description foreground color
-* `DescBG`: Non-selected list entry description background color
-* `SelectedDescFG`: Selected list entry description foreground color
-* `SelectedDescBG`: Selected list entry description background color
-* `Player`: Path to default video player
-* `Browser`: Path to default browser
+- `FG`: Primary text color for non-selected list items (and entry contents)
+- `BG`: Primary background color for non-selected list items (and entry contents)
+- `TitleFG`: Non-selected list entry title foreground color
+- `TitleBG`: Non-selected list entry title background color
+- `SelectedTitleFG`: Selected list entry title foreground color
+- `SelectedTitleBG`: Selected list entry title background color
+- `DescFG`: Non-selected list entry description foreground color
+- `DescBG`: Non-selected list entry description background color
+- `SelectedDescFG`: Selected list entry description foreground color
+- `SelectedDescBG`: Selected list entry description background color
+- `Player`: Path to default video player
+- `Browser`: Path to default browser
 
 ## Screenshots
 
