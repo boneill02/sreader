@@ -3,13 +3,13 @@ package ui
 import (
 	"fmt"
 
+	html2markdown "github.com/JohannesKaufmann/html-to-markdown/v2"
 	"github.com/boneill02/sreader/config"
 	"github.com/boneill02/sreader/feed"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/k3a/html2text"
 	"github.com/mmcdole/gofeed"
 )
 
@@ -238,7 +238,7 @@ func (m model) View() string {
  * Converts HTML to plain text and wraps lines at the specified width.
  */
 func htmlTruncate(content string, width int) string {
-	s := html2text.HTML2Text(content)
+	s, _ := html2markdown.ConvertString(content)
 	var result []rune
 	lineLen := 0
 	isLink := false
