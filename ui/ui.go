@@ -291,8 +291,8 @@ func newModel(feeds []*gofeed.Feed, conf *config.Config, width, height int) mode
 		for _, item := range feeds[0].Items {
 			entryItems = append(entryItems, feedItem{
 				title: item.Title,
-				desc: item.Description,
-				link: item.Link
+				desc:  item.Description,
+				link:  item.Link,
 			})
 		}
 	}
