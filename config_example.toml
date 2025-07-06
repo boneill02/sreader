@@ -1,0 +1,24 @@
+# Example configuration for sreader
+
+# Foreground and background colors
+# These colors are used for the text and background of the entire viewport
+FG = "#BFD7EA" # Very light blue
+BG = "#000000" # Black
+
+# Title colors for the entry list
+TitleFG = "#BFD7EA" # Very light blue
+TitleBG = "#000000" # Black
+SelectedTitleFG = "#000000" # Black
+SelectedTitleBG = "#306BAC" # Light blue
+
+# Description colors for the entry list
+DescFG = "#BFD7EA" # Very light blue
+DescBG = "#000000" # Black
+SelectedDescFG = "#000000" # Black
+SelectedDescBG = "#306BAC" # Light blue
+
+# Player to use for opening video URLs
+Player = "mpv"
+
+# Browser to use for opening web links
+Browser = "google-chrome-stable"
