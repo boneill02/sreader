@@ -208,8 +208,8 @@ func (m *model) updateViewport() {
 		// Set the content to the selected entry's content
 		content := "\nDate: " + m.feeds[m.currFeed].Items[m.currEntry].PublishedParsed.String()
 		content += "\nLink: " + m.feeds[m.currFeed].Items[m.currEntry].Link
-		content += "\nDescription:\n" + htmlTruncate(m.feeds[m.currFeed].Items[m.currEntry].Description, m.width-2)
-		content += "\n\nContent:\n" + htmlTruncate(m.feeds[m.currFeed].Items[m.currEntry].Content, m.width-2)
+		content += "\n\n" + htmlTruncate(m.feeds[m.currFeed].Items[m.currEntry].Description, m.width-2)
+		content += "\n\n" + htmlTruncate(m.feeds[m.currFeed].Items[m.currEntry].Content, m.width-2)
 		m.entryView.SetContent(content)
 		m.entryView.GotoTop()
 	}
