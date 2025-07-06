@@ -187,13 +187,56 @@ func (m *model) updateEntryList() {
 	m.currEntry = 0
 }
 
+/**
+ * Converts HTML to plain text and wraps lines at the specified width.
+ */
+func htmlTruncate(html string, width int) string {
+	s := html2text.HTML2Text(html)
+	var result []rune
+	lineLen := 0
+	isLink := false
+	i := 0
+	for i < len(s) {
+		ch := s[i]
+		// Check for start of URL
+		if ch == 'h' && i+3 < len(s) && s[i:i+4] == "http" {
+			isLink = true
+		}
+
+		// Check if end of URL
+		if isLink && (ch == ' ' || ch == '\n' || ch == '\t') {
+			isLink = false
+		}
+		result = append(result, rune(ch))
+		if ch == '\n' {
+			lineLen = 0
+		} else {
+			lineLen++
+		}
+		if lineLen >= width && !isLink {
+			// Wrap word if it exceeds width
+			// Find the last space before the width limit
+			for j := len(result) - 1; j >= 0; j-- {
+				if result[j] == ' ' || result[j] == '\n' {
+					// Replace the space with a newline
+					result[j] = '\n'
+					lineLen = len(result) - j - 1 // Reset line length after newline
+					break
+				}
+			}
+		}
+		i++
+	}
+	return string(result)
+}
+
 func (m *model) updateViewport() {
 	if m.currFeed < len(m.feeds) && m.currEntry < len(m.feeds[m.currFeed].Items) {
 		// Set the content to the selected entry's content
 		content := "\nDate: " + m.feeds[m.currFeed].Items[m.currEntry].PublishedParsed.String()
 		content += "\nLink: " + m.feeds[m.currFeed].Items[m.currEntry].Link
-		content += "\nDescription:\n" + html2text.HTML2Text(m.feeds[m.currFeed].Items[m.currEntry].Description)
-		content += "\n\nContent:\n" + html2text.HTML2Text(m.feeds[m.currFeed].Items[m.currEntry].Content)
+		content += "\nDescription:\n" + htmlTruncate(m.feeds[m.currFeed].Items[m.currEntry].Description, m.width-2)
+		content += "\n\nContent:\n" + htmlTruncate(m.feeds[m.currFeed].Items[m.currEntry].Content, m.width-2)
 		m.entryView.SetContent(content)
 		m.entryView.GotoTop()
 	}
