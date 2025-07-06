@@ -7,6 +7,7 @@
 
 1. `go install sreader.go`
 1. Add feed URLs to `~/.config/sreader/urls`
+1. Create config file at `~/.config/sreader/config.toml` (optional)
 1. Run `sreader sync`
 1. Run `sreader`
 
@@ -25,15 +26,40 @@ sreader uses Vim-like keybindings by default.
 * `j`: Select next item
 * `k`: Select previous item
 * `l`: Open selected item
-* `o`: Open selected list entry in `$BROWSER`
-* `v`: Open selected list entry in `$PLAYER` (or [mpv](https://mpv.io/) if env
-  variable is empty)
+* `o`: Open selected list entry in web browser
+* `v`: Open selected list entry in video player
 * `r`: Refresh feeds
 * `q`: Quit
+
+## Configuration
+
+`sreader` can load color schemes through a config file located at
+`~/.config/sreader/config.toml`. See [config_example.toml](config_example.toml)
+for an example.
+
+If `Player` or `Browser` are not set in your `config.toml`, `sreader` will
+use your `$PLAYER` and `$BROWSER` environment variables as fallbacks. If those
+are also not set, `sreader` will default to `mpv` and `firefox` respectively.
+
+The following settings are supported (colors are represented by hex strings):
+
+* `FG`: Primary text color for non-selected list items (and entry contents)
+* `BG`: Primary background color for non-selected list items (and entry contents)
+* `TitleFG`: Non-selected list entry title foreground color
+* `TitleBG`: Non-selected list entry title background color
+* `SelectedTitleFG`: Selected list entry title foreground color
+* `SelectedTitleBG`: Selected list entry title background color
+* `DescFG`: Non-selected list entry description foreground color
+* `DescBG`: Non-selected list entry description background color
+* `SelectedDescFG`: Selected list entry description foreground color
+* `SelectedDescBG`: Selected list entry description background color
+* `Player`: Path to default video player
+* `Browser`: Path to default browser
 
 ## Screenshots
 
 ### Index view
+
 ![index](https://oneill.sh/img/sreader-index.png)
 
 ### Feed view
