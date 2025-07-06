@@ -5,7 +5,7 @@
 
 ## Usage
 
-1. `go install sreader.go`
+1. `go install` (ensure `$HOME/.local/share/go/bin` is in your `$PATH`)
 1. Add feed URLs to `~/.config/sreader/urls`
 1. Create config file at `~/.config/sreader/config.toml` (optional)
 1. Run `sreader sync`
