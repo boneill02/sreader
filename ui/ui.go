@@ -205,6 +205,8 @@ func (m model) View() string {
 		s += m.entryView.View()
 	}
 	s += "\n[h] back [l] enter [j/k] move [q] quit [r] sync [o] open [v] play"
+
+	// Render the entire UI with the app style
 	return appStyle.Render(lipgloss.Place(m.width, m.height, lipgloss.Left, lipgloss.Top, s))
 }
 
