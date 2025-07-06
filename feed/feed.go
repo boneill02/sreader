@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha1"
 	"encoding/hex"
+	"html"
 	"io"
 	"net/http"
 	"os"
@@ -52,6 +53,16 @@ func GetFeed(url string) *gofeed.Feed {
 
 	fp := gofeed.NewParser()
 	feed, err := fp.Parse(file)
+
+	// Unescape HTML entities
+	feed.Description = html.UnescapeString(feed.Description)
+	feed.Title = html.UnescapeString(feed.Title)
+
+	for _, item := range feed.Items {
+		item.Title = html.UnescapeString(item.Title)
+		item.Description = html.UnescapeString(item.Description)
+		item.Content = html.UnescapeString(item.Content)
+	}
 
 	if err != nil {
 		panic(err)
