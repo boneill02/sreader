@@ -123,7 +123,9 @@ func getFeed(url string) *gofeed.Feed {
 	file, err := os.Open(os.Getenv("HOME") + config.Datadir + "/" + hex.EncodeToString(urlsum[:]))
 
 	if err != nil {
-		panic(err)
+		// try to sync feed if it doesn't exist
+		println("Feed file not found for URL:", url, "Error:", err)
+		Sync()
 	}
 
 	fp := gofeed.NewParser()
