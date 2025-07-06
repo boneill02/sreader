@@ -14,7 +14,7 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/boneill02/sreader/config"
+	"github.com/bmoneill/sreader/config"
 	"github.com/mmcdole/gofeed"
 )
 

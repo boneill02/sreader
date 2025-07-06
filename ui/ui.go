@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	html2markdown "github.com/JohannesKaufmann/html-to-markdown/v2"
-	"github.com/boneill02/sreader/config"
-	"github.com/boneill02/sreader/feed"
+	"github.com/bmoneill/sreader/config"
+	"github.com/bmoneill/sreader/feed"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"

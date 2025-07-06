@@ -1,4 +1,4 @@
-module github.com/boneill02/sreader
+module github.com/bmoneill/sreader
 
 go 1.24.4
 

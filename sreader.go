@@ -4,9 +4,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/boneill02/sreader/config"
-	"github.com/boneill02/sreader/feed"
-	"github.com/boneill02/sreader/ui"
+	"github.com/bmoneill/sreader/config"
+	"github.com/bmoneill/sreader/feed"
+	"github.com/bmoneill/sreader/ui"
 )
 
 func main() {
