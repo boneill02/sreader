@@ -52,49 +52,59 @@ type model struct {
 	height    int
 }
 
-func NewModel(feeds []*gofeed.Feed, conf *config.Config, width, height int) model {
-	feedItems := make([]list.Item, len(feeds))
-	for i, f := range feeds {
-		feedItems[i] = feedItem{title: f.Title, desc: f.Description, link: ""}
-	}
-	feedList := list.New(feedItems, list.NewDefaultDelegate(), width, height)
-	feedList.Title = "Feeds"
-	feedList.SetShowHelp(false)
+/**
+ * Initializes the UI with the given feeds and configuration.
+ */
+func Init(feeds []*gofeed.Feed, conf *config.Config) *tea.Program {
+	width, height := 500, 24 // width set to 500, hopefully enough for most screens
 
-	entryItems := []list.Item{}
-	if len(feeds) > 0 {
-		for _, item := range feeds[0].Items {
-			entryItems = append(entryItems, feedItem{title: item.Title, desc: item.Description, link: item.Link})
-		}
-	}
-	entryList := list.New(entryItems, list.NewDefaultDelegate(), width, height)
-	entryList.Title = "Entries"
-	entryList.SetShowHelp(false)
+	// Styles
+	bg := lipgloss.Color(conf.BG)
+	fg := lipgloss.Color(conf.FG)
+	selectedTitleFG := lipgloss.Color(conf.SelectedTitleFG)
+	selectedTitleBG := lipgloss.Color(conf.SelectedTitleBG)
+	selectedDescFG := lipgloss.Color(conf.SelectedDescFG)
+	selectedDescBG := lipgloss.Color(conf.SelectedDescBG)
+	titleFG := lipgloss.Color(conf.TitleFG)
+	titleBG := lipgloss.Color(conf.TitleBG)
+	descFG := lipgloss.Color(conf.DescFG)
+	descBG := lipgloss.Color(conf.DescBG)
 
-	vp := viewport.New(width, height)
-	if len(feeds) > 0 && len(feeds[0].Items) > 0 {
-		vp.SetContent(feeds[0].Items[0].Content)
-	}
+	// Load list delegate with styles
+	listDelegate = list.NewDefaultDelegate()
+	listDelegate.Styles.NormalTitle = lipgloss.NewStyle().
+		Foreground(titleFG).
+		Background(titleBG).
+		Width(width)
+	listDelegate.Styles.SelectedTitle = lipgloss.NewStyle().
+		Foreground(selectedTitleFG).
+		Background(selectedTitleBG).
+		Width(width)
+	listDelegate.Styles.NormalDesc = lipgloss.NewStyle().
+		Foreground(descFG).
+		Background(descBG).
+		Width(width)
+	listDelegate.Styles.SelectedDesc = lipgloss.NewStyle().
+		Foreground(selectedDescFG).
+		Background(selectedDescBG).
+		Width(width)
 
-	return model{
-		feeds:     feeds,
-		config:    conf,
-		view:      mainView,
-		feedList:  feedList,
-		entryList: entryList,
-		entryView: vp,
-		currFeed:  0,
-		currEntry: 0,
-		width:     width,
-		height:    height,
-	}
+	m := newModel(feeds, conf, width, height)
+	m.feedList.SetDelegate(listDelegate)
+	appStyle = lipgloss.NewStyle().
+		Foreground(fg).
+		Background(bg).
+		Width(width)
+	return tea.NewProgram(m, tea.WithAltScreen())
 }
 
 func (m model) Init() tea.Cmd {
 	return nil
 }
 
-// Update handles user input and updates the model accordingly.
+/**
+ * Handles user input and updates the model accordingly.
+ */
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -171,6 +181,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+/**
+ * In entryList, updates the list of entries based on the currently selected feed.
+ */
 func (m *model) updateEntryList() {
 	entryItems := []list.Item{}
 	if m.currFeed < len(m.feeds) {
@@ -187,6 +200,9 @@ func (m *model) updateEntryList() {
 	m.currEntry = 0
 }
 
+/**
+ * In entryView, updates the viewport with the content of the currently selected entry.
+ */
 func (m *model) updateViewport() {
 	if m.currFeed < len(m.feeds) && m.currEntry < len(m.feeds[m.currFeed].Items) {
 		// Set the content to the selected entry's content
@@ -199,6 +215,9 @@ func (m *model) updateViewport() {
 	}
 }
 
+/**
+ * Renders the current view of the model.
+ */
 func (m model) View() string {
 	s := fmt.Sprintf("%s\n\n", titlestr)
 	switch m.view {
@@ -213,49 +232,6 @@ func (m model) View() string {
 
 	// Render the entire UI with the app style
 	return appStyle.Render(lipgloss.Place(m.width, m.height, lipgloss.Left, lipgloss.Top, s))
-}
-
-func Init(feeds []*gofeed.Feed, conf *config.Config) *tea.Program {
-	width, height := 500, 24 // width set to 500, hopefully enough for most screens
-
-	// Styles
-	bg := lipgloss.Color(conf.BG)
-	fg := lipgloss.Color(conf.FG)
-	selectedTitleFG := lipgloss.Color(conf.SelectedTitleFG)
-	selectedTitleBG := lipgloss.Color(conf.SelectedTitleBG)
-	selectedDescFG := lipgloss.Color(conf.SelectedDescFG)
-	selectedDescBG := lipgloss.Color(conf.SelectedDescBG)
-	titleFG := lipgloss.Color(conf.TitleFG)
-	titleBG := lipgloss.Color(conf.TitleBG)
-	descFG := lipgloss.Color(conf.DescFG)
-	descBG := lipgloss.Color(conf.DescBG)
-
-	// Load list delegate with styles
-	listDelegate = list.NewDefaultDelegate()
-	listDelegate.Styles.NormalTitle = lipgloss.NewStyle().
-		Foreground(titleFG).
-		Background(titleBG).
-		Width(width)
-	listDelegate.Styles.SelectedTitle = lipgloss.NewStyle().
-		Foreground(selectedTitleFG).
-		Background(selectedTitleBG).
-		Width(width)
-	listDelegate.Styles.NormalDesc = lipgloss.NewStyle().
-		Foreground(descFG).
-		Background(descBG).
-		Width(width)
-	listDelegate.Styles.SelectedDesc = lipgloss.NewStyle().
-		Foreground(selectedDescFG).
-		Background(selectedDescBG).
-		Width(width)
-
-	m := NewModel(feeds, conf, width, height)
-	m.feedList.SetDelegate(listDelegate)
-	appStyle = lipgloss.NewStyle().
-		Foreground(fg).
-		Background(bg).
-		Width(width)
-	return tea.NewProgram(m, tea.WithAltScreen())
 }
 
 /**
@@ -299,4 +275,42 @@ func htmlTruncate(html string, width int) string {
 		i++
 	}
 	return string(result)
+}
+
+func newModel(feeds []*gofeed.Feed, conf *config.Config, width, height int) model {
+	feedItems := make([]list.Item, len(feeds))
+	for i, f := range feeds {
+		feedItems[i] = feedItem{title: f.Title, desc: f.Description, link: ""}
+	}
+	feedList := list.New(feedItems, list.NewDefaultDelegate(), width, height)
+	feedList.Title = "Feeds"
+	feedList.SetShowHelp(false)
+
+	entryItems := []list.Item{}
+	if len(feeds) > 0 {
+		for _, item := range feeds[0].Items {
+			entryItems = append(entryItems, feedItem{title: item.Title, desc: item.Description, link: item.Link})
+		}
+	}
+	entryList := list.New(entryItems, list.NewDefaultDelegate(), width, height)
+	entryList.Title = "Entries"
+	entryList.SetShowHelp(false)
+
+	vp := viewport.New(width, height)
+	if len(feeds) > 0 && len(feeds[0].Items) > 0 {
+		vp.SetContent(feeds[0].Items[0].Content)
+	}
+
+	return model{
+		feeds:     feeds,
+		config:    conf,
+		view:      mainView,
+		feedList:  feedList,
+		entryList: entryList,
+		entryView: vp,
+		currFeed:  0,
+		currEntry: 0,
+		width:     width,
+		height:    height,
+	}
 }
