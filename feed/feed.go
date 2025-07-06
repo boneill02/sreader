@@ -99,6 +99,23 @@ func Sync() {
 }
 
 /**
+ * Unescape HTML entities and convert to ASCII
+ */
+func formatHTMLString(s string) string {
+	s = html.UnescapeString(s)
+
+	ascii := make([]rune, 0, len(s))
+	for _, r := range s {
+		if r < 128 {
+			ascii = append(ascii, r)
+		} else {
+			ascii = append(ascii, ' ')
+		}
+	}
+	return string(ascii)
+}
+
+/**
  * Parse feed from data directory
  */
 func getFeed(url string) *gofeed.Feed {
@@ -112,14 +129,14 @@ func getFeed(url string) *gofeed.Feed {
 	fp := gofeed.NewParser()
 	feed, err := fp.Parse(file)
 
-	// Unescape HTML entities
-	feed.Description = html.UnescapeString(feed.Description)
-	feed.Title = html.UnescapeString(feed.Title)
+	// Unescape HTML entities and convert to ASCII
+	feed.Description = formatHTMLString(feed.Description)
+	feed.Title = formatHTMLString(feed.Title)
 
 	for _, item := range feed.Items {
-		item.Title = html.UnescapeString(item.Title)
-		item.Description = html.UnescapeString(item.Description)
-		item.Content = html.UnescapeString(item.Content)
+		item.Title = formatHTMLString(item.Title)
+		item.Description = formatHTMLString(item.Description)
+		item.Content = formatHTMLString(item.Content)
 	}
 
 	if err != nil {
