@@ -23,6 +23,13 @@ func main() {
 		}
 	}
 
+	writer, err := os.Create(config.Config.DataDir + "/sreader.log")
+	if err != nil {
+		log.Fatalln("Failed to create log file:", err.Error())
+	}
+
+	log.SetOutput(writer)
+
 	feeds := feed.GetFeeds()
 	ui := ui.Init(feeds)
 	if _, err := ui.Run(); err != nil {
