@@ -1,5 +1,9 @@
 # Example configuration for sreader
 
+# Paths
+URLsFile = "/home/me/.config/sreader/urls"
+DBFile = "/home/me/.local/share/sreader/sreader.db"
+
 # Foreground and background colors
 # These colors are used for the text and background of the entire viewport
 FG = "#BFD7EA" # Very light blue
@@ -21,4 +25,4 @@ SelectedDescBG = "#306BAC" # Light blue
 Player = "mpv"
 
 # Browser to use for opening web links
-Browser = "google-chrome-stable"
+Browser = "firefox"
