@@ -48,7 +48,7 @@ var (
 	defaultDataDir  string = os.Getenv("HOME") + "/.local/share/sreader"
 	defaultConfPath string = defaultConfDir + "/config.toml"
 	defaultDBFile   string = defaultDataDir + "/sreader.db"
-	Config                 = &SreaderConfig{
+	Config  *SreaderConfig = &SreaderConfig{
 		ConfDir:         defaultConfDir,  // Not usable in config file
 		ConfFile:        defaultConfPath, // Not usable in config file
 		DataDir:         defaultDataDir,
@@ -85,9 +85,13 @@ func LoadConfig(path string) {
 	// Load config file
 	if path != "" {
 		file, err := os.Open(path)
-		if err == nil {
-			defer file.Close()
-			toml.NewDecoder(file).Decode(Config)
+		if err != nil {
+			log.Fatalln("Failed to open configuration file:", err.Error())
+		}
+		defer file.Close()
+		_, err = toml.NewDecoder(file).Decode(Config)
+		if err != nil {
+			log.Fatalln("Failed to parse configuration file:", err.Error())
 		}
 	}
 
