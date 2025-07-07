@@ -10,8 +10,8 @@ type SreaderConfig struct {
 	ConfDir         string
 	DataDir         string
 	ConfFile        string
-	UrlsFile        string
-	DBPath          string
+	URLsFile        string
+	DBFile          string
 	BG              string
 	FG              string
 	TitleBG         string
@@ -46,14 +46,14 @@ var (
 	defaultConfDir  string = os.Getenv("HOME") + "/.config/sreader"
 	defaultDataDir  string = os.Getenv("HOME") + "/.local/share/sreader"
 	defaultConfPath string = defaultConfDir + "/config.toml"
-	defaultUrlsPath string = defaultConfDir + "/urls"
-	defaultDBPath   string = defaultDataDir + "/sreader.db"
+	defaultURLsFile string = defaultConfDir + "/urls"
+	defaultDBFile   string = defaultDataDir + "/sreader.db"
 	Config                 = &SreaderConfig{
 		ConfDir:         defaultConfDir,  // Not usable in config file
 		ConfFile:        defaultConfPath, // Not usable in config file
 		DataDir:         defaultDataDir,
-		UrlsFile:        defaultUrlsPath,
-		DBPath:          defaultDBPath,
+		URLsFile:        defaultURLsFile,
+		DBFile:          defaultDBFile,
 		BG:              defaultBG,
 		FG:              defaultFG,
 		TitleBG:         defaultTitleBG,

@@ -35,7 +35,7 @@ func InitDB() {
 	println("Initializing database...")
 	// Initialize the SQLite database connection
 	var err error
-	conn, err = sql.Open("sqlite3", config.Config.DBPath)
+	conn, err = sql.Open("sqlite3", config.Config.DBFile)
 	if err != nil {
 		panic(err)
 	}
