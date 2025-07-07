@@ -71,11 +71,18 @@ func Sync() {
 
 	// Start workers
 	println("Getting feeds...")
-	feeds := GetFeeds()
-	for _, feed := range feeds {
+	for i := range urls {
+		url := urls[i]
+		if len(url) < 1 {
+			continue
+		}
+
+		feed := GetFeedByURL(url)
+		wg.Add(1)
 		if feed != nil {
-			wg.Add(1)
-			go syncWorker(feed.URL, feed.LastUpdated, &wg, ctx)
+			go syncWorker(url, feed.LastUpdated, &wg, ctx)
+		} else {
+			go syncWorker(url, "", &wg, ctx)
 		}
 	}
 
@@ -87,12 +94,11 @@ func Sync() {
 	wg.Wait()
 
 	println("Updating DB...")
-	// Update DB
 	feed_contents := loadRSSFeeds()
 	for _, f := range feed_contents {
 		if f != nil {
 			if id, err := AddFeed(f); err != nil {
-				println("Error adding feed:", err)
+				println("Error adding feed:", err.Error())
 			} else {
 				MarkUpdated(id)
 			}
@@ -122,8 +128,9 @@ func formatHTMLString(s string) string {
  */
 func loadRSSFeed(url string) *gofeed.Feed {
 	urlsum := sha1.Sum([]byte(url))
-	file, err := os.Open(config.Config.DataDir + "/" + hex.EncodeToString(urlsum[:]))
-	println("Loading feed from file:", config.Config.DataDir+"/"+hex.EncodeToString(urlsum[:]))
+	filename := config.Config.DataDir + "/" + hex.EncodeToString(urlsum[:]) + ".tmp"
+	file, err := os.Open(filename)
+	println("Loading feed from file:", filename)
 
 	if err != nil {
 		// try to sync feed if it doesn't exist
@@ -135,7 +142,7 @@ func loadRSSFeed(url string) *gofeed.Feed {
 	feed, err := fp.Parse(file)
 
 	if err != nil {
-		println("Failed to parse feed from file:", config.Config.DataDir+"/"+hex.EncodeToString(urlsum[:]), "Error:", err)
+		println("Failed to parse feed from file:", filename, "Error:", err.Error())
 		return nil
 	}
 
@@ -149,10 +156,7 @@ func loadRSSFeed(url string) *gofeed.Feed {
 		item.Content = formatHTMLString(item.Content)
 	}
 
-	if err != nil {
-		panic(err)
-	}
-
+	os.Remove(filename) // Clean up temporary file
 	return feed
 }
 
@@ -171,16 +175,22 @@ func loadRSSFeeds() []*gofeed.Feed {
 func syncWorker(url string, modTime string, wg *sync.WaitGroup, ctx context.Context) {
 	defer wg.Done()
 
+	print(modTime)
+
 	// Get file name for URL
 	urlsum := sha1.Sum([]byte(url))
-	filename := config.Config.DataDir + "/" + hex.EncodeToString(urlsum[:])
-	tmpFile := filename + ".tmp"
+	filename := config.Config.DataDir + "/" + hex.EncodeToString(urlsum[:]) + ".tmp"
 
 	// Create request to fetch the feed
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		println("Failed to create request for URL:", url, "Error:", err)
 		return
+	}
+
+	req.Header.Set("User-Agent", "sreader/1.0")
+	if modTime != "" {
+		req.Header.Set("If-Modified-Since", modTime)
 	}
 
 	// Do GET request
@@ -190,7 +200,7 @@ func syncWorker(url string, modTime string, wg *sync.WaitGroup, ctx context.Cont
 	}
 
 	// Create the temporary file
-	out, err := os.Create(tmpFile)
+	out, err := os.Create(filename)
 	if err != nil {
 		panic(err)
 	}
@@ -205,16 +215,15 @@ func syncWorker(url string, modTime string, wg *sync.WaitGroup, ctx context.Cont
 		panic("Failed to download feed \"" + url + "\": " + resp.Status)
 	}
 
+	out.Close()
+
 	select {
 	case <-ctx.Done():
 		// Context was cancelled, clean up and exit
 		println("Sync cancelled for URL:", url)
-		os.Remove(tmpFile) // Clean up temporary file
+		os.Remove(filename) // Clean up temporary file
 		return
 	default:
-		// Move temporary file to the final destination
-		if err := os.Rename(tmpFile, filename); err != nil {
-			panic(err)
-		}
+		return
 	}
 }

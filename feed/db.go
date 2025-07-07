@@ -194,6 +194,20 @@ func GetEntries(feedID int) []*Entry {
 	return entries
 }
 
+func GetFeedByURL(url string) *Feed {
+	rows, err := conn.Query("SELECT 1 FROM feeds WHERE url = ?", url)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		// Feed exists
+		return &Feed{URL: url}
+	}
+	return nil
+}
+
 func GetFeeds() []*Feed {
 	// Retrieve all feeds
 	rows, err := conn.Query("SELECT id, url, title, description, last_updated FROM feeds")
