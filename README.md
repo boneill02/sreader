@@ -15,7 +15,6 @@
 - [X] Clean, intuitive TUI interface
 - [X] Open entries in browser or media player
 - [X] Vim key bindings
-- [X] XDG Base Directory Specification compliant
 
 ## Keybindings
 
