@@ -6,8 +6,7 @@
 ## Usage
 
 1. `go install` (ensure `$HOME/.local/share/go/bin` is in your `$PATH`)
-1. Add feed URLs to `~/.config/sreader/urls`
-1. Create config file at `~/.config/sreader/config.toml` (optional)
+1. Create config file at `~/.config/sreader/config.toml` and add URLs
 1. Run `sreader sync`
 1. Run `sreader`
 
@@ -33,9 +32,11 @@ sreader uses Vim-like keybindings by default.
 
 ## Configuration
 
-`sreader` can load color schemes through a config file located at
+`sreader` can load settings through a config file located at
 `~/.config/sreader/config.toml`. See [config_example.toml](config_example.toml)
 for an example.
+
+A config file with the URL list must be present before running `sreader`.
 
 If `Player` or `Browser` are not set in your `config.toml`, `sreader` will
 use your `$PLAYER` and `$BROWSER` environment variables as fallbacks. If those
@@ -43,6 +44,7 @@ are also not set, `sreader` will default to `mpv` and `firefox` respectively.
 
 The following settings are supported (colors are represented by hex strings):
 
+- `URLs` (**REQUIRED**): List of feed URLs
 - `FG`: Primary text color for non-selected list items (and entry contents)
 - `BG`: Primary background color for non-selected list items (and entry contents)
 - `TitleFG`: Non-selected list entry title foreground color
