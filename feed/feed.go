@@ -20,8 +20,13 @@ import (
 
 var urls []string
 
+// Initialize the backend.
+// This function does the following:
+// - calls InitDB to initialize the database,
+// - loads user-specified URLs
 func Init() {
 	InitDB()
+
 	/* set configuration stuff */
 	urlsfile := config.Config.ConfDir + "/urls"
 	_, err := os.Stat(urlsfile)
@@ -39,27 +44,22 @@ func Init() {
 	urls = strings.Split(string(dat), "\n")
 }
 
-/**
- * Open feed in web browser
- * Uses the BROWSER environment variable to determine which browser to use.
- * If BROWSER is not set, it will not open the URL.
- */
+// Open URL in web browser
 func OpenInBrowser(url string, browser string) {
 	cmd := exec.Command(browser, url)
 	cmd.Start()
 }
 
-/**
- * Open feed in video player
- */
+// Open URL in media player
 func OpenInPlayer(url string, player string) {
 	cmd := exec.Command("setsid", "nohup", player, url)
 	cmd.Start()
 }
 
-/**
- * Sync all feeds.
- */
+// Sync feeds
+// This function asynchronously GETs feeds, using the last_updated field
+// in the database to only grab/update feeds that were updated since the last sync.
+// The new feed contents are then stored in the database.
 func Sync() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -104,11 +104,10 @@ func Sync() {
 			}
 		}
 	}
+	println("Done.")
 }
 
-/**
- * Unescape HTML entities and convert to ASCII
- */
+// Unescape HTML entities and convert to ASCII
 func formatHTMLString(s string) string {
 	s = html.UnescapeString(s)
 
@@ -123,26 +122,21 @@ func formatHTMLString(s string) string {
 	return string(ascii)
 }
 
-/**
- * Parse feed from data directory
- */
+// Called by loadRSSFeeds. Parse feed from temporary file grabbed by syncWorkers and remove the file.
 func loadRSSFeed(url string) *gofeed.Feed {
 	urlsum := sha1.Sum([]byte(url))
 	filename := config.Config.DataDir + "/" + hex.EncodeToString(urlsum[:]) + ".tmp"
 	file, err := os.Open(filename)
-	println("Loading feed from file:", filename)
-
 	if err != nil {
-		// try to sync feed if it doesn't exist
-		println("Feed file not found for URL:", url, "Error:", err)
-		Sync()
+		println("Failed to open temporary file:", err.Error())
+		return nil
 	}
 
 	fp := gofeed.NewParser()
 	feed, err := fp.Parse(file)
 
 	if err != nil {
-		println("Failed to parse feed from file:", filename, "Error:", err.Error())
+		println("Failed to parse feed (possibly wrong URL or badly formatted XML?)")
 		return nil
 	}
 
@@ -160,6 +154,7 @@ func loadRSSFeed(url string) *gofeed.Feed {
 	return feed
 }
 
+// Parse all downloaded RSS feeds
 func loadRSSFeeds() []*gofeed.Feed {
 	var feeds []*gofeed.Feed
 
@@ -172,10 +167,9 @@ func loadRSSFeeds() []*gofeed.Feed {
 	return feeds
 }
 
+// Single GET request worker
 func syncWorker(url string, modTime string, wg *sync.WaitGroup, ctx context.Context) {
 	defer wg.Done()
-
-	print(modTime)
 
 	// Get file name for URL
 	urlsum := sha1.Sum([]byte(url))
