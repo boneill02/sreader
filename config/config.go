@@ -86,4 +86,8 @@ func LoadConfig(path string) {
 			toml.NewDecoder(file).Decode(Config)
 		}
 	}
+
+	// Make directories if non-existent
+	os.MkdirAll(Config.DataDir, os.ModePerm)
+	os.MkdirAll(Config.ConfDir, os.ModePerm)
 }
