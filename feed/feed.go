@@ -19,40 +19,6 @@ import (
 	"github.com/mmcdole/gofeed"
 )
 
-var urls []string
-
-// Initialize the backend.
-// This function does the following:
-// - calls InitDB to initialize the database,
-// - loads user-specified URLs
-func Init() {
-	InitDB()
-
-	/* set configuration stuff */
-	urlsfile := config.Config.ConfDir + "/urls"
-	_, err := os.Stat(urlsfile)
-	if os.IsNotExist(err) {
-		file, err := os.Create(urlsfile)
-		if err != nil {
-			log.Fatalln("Failed to create URLs file", err.Error())
-		}
-		defer file.Close()
-	}
-	dat, err := os.ReadFile(urlsfile)
-	if err != nil {
-		log.Fatalln("Failed to read URLs file", err.Error())
-	}
-	urls = strings.Split(string(dat), "\n")
-
-	if config.Config.URLs != nil {
-		for i := range config.Config.URLs {
-			if config.Config.URLs[i] != nil && len(strings.TrimSpace(*config.Config.URLs[i])) > 0 {
-				urls = append(urls, *config.Config.URLs[i])
-			}
-		}
-	}
-}
-
 // Open URL in web browser
 func OpenInBrowser(url string, browser string) {
 	cmd := exec.Command(browser, url)
@@ -80,18 +46,18 @@ func Sync() {
 
 	// Start workers
 	log.Println("Getting feeds...")
-	for i := range urls {
-		url := urls[i]
-		if len(url) < 1 {
+	for i := range config.Config.URLs {
+		url := config.Config.URLs[i]
+		if url == nil || len(strings.TrimSpace(*url)) < 1 {
 			continue
 		}
 
-		feed := GetFeedByURL(url)
+		feed := GetFeedByURL(*url)
 		wg.Add(1)
 		if feed != nil {
-			go syncWorker(url, feed.LastUpdated, &wg, ctx)
+			go syncWorker(*url, feed.LastUpdated, &wg, ctx)
 		} else {
-			go syncWorker(url, "", &wg, ctx)
+			go syncWorker(*url, "", &wg, ctx)
 		}
 	}
 
@@ -167,9 +133,9 @@ func loadRSSFeed(url string) *gofeed.Feed {
 func loadRSSFeeds() []*gofeed.Feed {
 	var feeds []*gofeed.Feed
 
-	for _, url := range urls {
-		if len(url) > 0 {
-			feeds = append(feeds, loadRSSFeed(url))
+	for _, url := range config.Config.URLs {
+		if len(*url) > 0 {
+			feeds = append(feeds, loadRSSFeed(*url))
 		}
 	}
 

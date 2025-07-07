@@ -10,9 +10,9 @@ import (
 )
 
 func main() {
-	config.LoadConfig(os.Getenv("HOME") + config.Config.ConfFile)
+	config.LoadConfig(config.Config.ConfFile)
 
-	feed.Init()
+	feed.InitDB()
 
 	/* sync and quit if called with the arg "sync" */
 	if len(os.Args) > 1 {

@@ -1,7 +1,12 @@
 # Example configuration for sreader
 
+# URL list (REQUIRED)
+URLs = [
+    "https://example.com/rss.xml",
+    "https://another-example.com/index.xml",
+]
+
 # Paths
-URLsFile = "/home/me/.config/sreader/urls"
 DBFile = "/home/me/.local/share/sreader/sreader.db"
 
 # Foreground and background colors
