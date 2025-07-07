@@ -51,9 +51,7 @@ type model struct {
 	height    int
 }
 
-/**
- * Initializes the UI with the given feeds and configuration.
- */
+// Initializes the UI with the given feeds and configuration.
 func Init(feeds []*feed.Feed) *tea.Program {
 	width, height := 500, 24 // width set to 500, hopefully enough for most screens
 
@@ -101,9 +99,7 @@ func (m model) Init() tea.Cmd {
 	return nil
 }
 
-/**
- * Handles user input and updates the model accordingly.
- */
+// Handles user input and updates the model accordingly
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -202,9 +198,7 @@ func (m *model) updateEntryList() {
 	m.currEntry = 0
 }
 
-/**
- * In entryView, updates the viewport with the content of the currently selected entry.
- */
+// In entryView, updates the viewport with the content of the currently selected entry.
 func (m *model) updateViewport() {
 	if m.currFeed < len(m.feeds) && m.currEntry < len(m.feeds[m.currFeed].Entries) {
 		// Set the content to the selected entry's content
@@ -217,9 +211,7 @@ func (m *model) updateViewport() {
 	}
 }
 
-/**
- * Renders the current view of the model.
- */
+// Renders the current view of the model.
 func (m model) View() string {
 	s := fmt.Sprintf("%s\n\n", titlestr)
 	switch m.view {
@@ -236,9 +228,7 @@ func (m model) View() string {
 	return appStyle.Render(lipgloss.Place(m.width, m.height, lipgloss.Left, lipgloss.Top, s))
 }
 
-/**
- * Converts HTML to plain text and wraps lines at the specified width.
- */
+// Converts HTML to plain text and wraps lines at the specified width.
 func htmlTruncate(content string, width int) string {
 	s, _ := html2markdown.ConvertString(content)
 	var result []rune
@@ -279,6 +269,7 @@ func htmlTruncate(content string, width int) string {
 	return string(result)
 }
 
+// Initializes the model
 func newModel(feeds []*feed.Feed, width, height int) model {
 	feedItems := make([]list.Item, len(feeds))
 	for i, f := range feeds {
