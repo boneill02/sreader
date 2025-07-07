@@ -157,6 +157,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "r":
 			feed.Sync()
+			m.feeds = feed.GetFeeds()
 		case "o":
 			if m.view == feedView || m.view == entryView {
 				link := m.feeds[m.currFeed].Entries[m.currEntry].URL
