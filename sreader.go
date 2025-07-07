@@ -9,6 +9,8 @@ import (
 )
 
 func main() {
+	config.LoadConfig(os.Getenv("HOME") + config.Config.ConfFile)
+
 	feed.Init()
 
 	/* sync and quit if called with the arg "sync" */
@@ -20,9 +22,7 @@ func main() {
 		}
 	}
 
-	config.LoadConfig(os.Getenv("HOME") + config.Config.ConfFile)
 	feeds := feed.GetFeeds()
-
 	ui := ui.Init(feeds)
 	if _, err := ui.Run(); err != nil {
 		panic(err)
