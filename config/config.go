@@ -49,9 +49,9 @@ var (
 	defaultUrlsPath string = defaultConfDir + "/urls"
 	defaultDBPath   string = defaultDataDir + "/sreader.db"
 	Config                 = &SreaderConfig{
-		ConfDir:         defaultConfDir,
+		ConfDir:         defaultConfDir,  // Not usable in config file
+		ConfFile:        defaultConfPath, // Not usable in config file
 		DataDir:         defaultDataDir,
-		ConfFile:        defaultConfPath,
 		UrlsFile:        defaultUrlsPath,
 		DBPath:          defaultDBPath,
 		BG:              defaultBG,
