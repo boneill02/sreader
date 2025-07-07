@@ -56,9 +56,9 @@ func InitDB() {
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		feed_id INTEGER,
 		url TEXT,
-		title TEXT,
-		description TEXT,
-		content TEXT,
+		title TEXT NOT NULL DEFAULT '',
+		description TEXT NOT NULL DEFAULT '',
+		content TEXT NOT NULL DEFAULT '',
 		date_published DATETIME,
 		read INTEGER DEFAULT 0,
 		FOREIGN KEY(feed_id) REFERENCES feeds(id)
@@ -83,11 +83,26 @@ func AddFeed(feed *gofeed.Feed) error {
 		return err
 	}
 
-	if !exists {
+	if exists {
+		// Get ID of existing feed
+		println("Feed already exists in DB, updating:", feed.Link)
+		stmt, err = conn.Prepare("SELECT id FROM feeds WHERE url = ?")
+		if err != nil {
+			println("Error preparing statement:", err.Error())
+			return err
+		}
+		defer stmt.Close()
+		err = stmt.QueryRow(feed.Link).Scan(&id)
+		if err != nil {
+			println("Error querying feed ID:", err.Error())
+			return err
+		}
+	} else {
+		// Insert new feed into the database
 		println("Adding new feed to DB: ", feed.Link)
-		// Insert  new feed into the database
 		stmt, err = conn.Prepare("INSERT INTO feeds (url, title, description) VALUES (?, ?, ?)")
 		if err != nil {
+			println("Error preparing statement:", err.Error())
 			return err
 		}
 		defer stmt.Close()
@@ -97,9 +112,10 @@ func AddFeed(feed *gofeed.Feed) error {
 			println("Error inserting feed:", err)
 			return err
 		}
+		id, _ = res.LastInsertId()
 	}
 
-	id, err = res.LastInsertId()
+	// Add entries
 	for _, item := range feed.Items {
 		err = AddEntry(id, item.Link, item.Title, item.Description, item.PublishedParsed.Format("2006-01-02 15:04:05"))
 		if err != nil {
@@ -107,6 +123,8 @@ func AddFeed(feed *gofeed.Feed) error {
 			return err
 		}
 	}
+
+	println(feed.Title, "added/updated successfully,", len(feed.Items), "entries.")
 	return err
 }
 
@@ -134,7 +152,7 @@ func AddEntry(feedID int64, url, title, description string, datePublished string
 
 func GetEntries(feedID int) []*Entry {
 	// Retrieve entries for a specific feed
-	rows, err := conn.Query("SELECT id, url, title, description, date_published, read FROM entries WHERE feed_id = ?", feedID)
+	rows, err := conn.Query("SELECT id, url, title, description, date_published, read, content FROM entries WHERE feed_id = ?", feedID)
 	if err != nil {
 		return nil
 	}
@@ -149,6 +167,7 @@ func GetEntries(feedID int) []*Entry {
 
 		err := rows.Scan(&id, &url, &title, &description, &datePublished, &read, &content)
 		if err != nil {
+			println("Error scanning entry:", err.Error())
 			return nil
 		}
 
@@ -196,6 +215,7 @@ func GetFeeds() []*Feed {
 			Entries:     GetEntries(id),
 		}
 		feeds = append(feeds, feed)
+		println(len(feed.Entries), "entries loaded for feed:", feed.Title, " (", id, ")")
 	}
 
 	return feeds

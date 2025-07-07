@@ -91,8 +91,10 @@ func Sync() {
 	// Update DB
 	feeds := loadRSSFeeds()
 	for _, feed := range feeds {
-		if err := AddFeed(feed); err != nil {
-			println("Error adding feed:", err)
+		if feed != nil {
+			if err := AddFeed(feed); err != nil {
+				println("Error adding feed:", err)
+			}
 		}
 	}
 }
@@ -120,6 +122,7 @@ func formatHTMLString(s string) string {
 func loadRSSFeed(url string) *gofeed.Feed {
 	urlsum := sha1.Sum([]byte(url))
 	file, err := os.Open(config.Config.DataDir + "/" + hex.EncodeToString(urlsum[:]))
+	println("Loading feed from file:", config.Config.DataDir+"/"+hex.EncodeToString(urlsum[:]))
 
 	if err != nil {
 		// try to sync feed if it doesn't exist
@@ -129,6 +132,11 @@ func loadRSSFeed(url string) *gofeed.Feed {
 
 	fp := gofeed.NewParser()
 	feed, err := fp.Parse(file)
+
+	if err != nil {
+		println("Failed to parse feed from file:", config.Config.DataDir+"/"+hex.EncodeToString(urlsum[:]), "Error:", err)
+		return nil
+	}
 
 	// Unescape HTML entities and convert to ASCII
 	feed.Description = formatHTMLString(feed.Description)
