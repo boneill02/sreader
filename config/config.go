@@ -6,13 +6,12 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-// Constants for configuration paths
-const Confdir string = "/.config/sreader"
-const Datadir string = "/.local/share/sreader"
-const Confpath string = Confdir + "/config.toml"
-const Urlspath string = Confdir + "/urls"
-
-type Config struct {
+type SreaderConfig struct {
+	ConfDir         string
+	DataDir         string
+	ConfFile        string
+	UrlsFile        string
+	DBPath          string
 	BG              string
 	FG              string
 	TitleBG         string
@@ -27,32 +26,56 @@ type Config struct {
 	Browser         string
 }
 
-func LoadConfig(path string) *Config {
-	// Define default configuration values
-	const defaultPlayer = "mpv"
-	const defaultBrowser = "firefox"
+const (
+	defaultBG              string = "#000000"
+	defaultFG              string = "#FFFFFF"
+	defaultTitleBG         string = "#FFFFFF"
+	defaultTitleFG         string = "#000000"
+	defaultSelectedTitleBG string = "#7FB685"
+	defaultSelectedTitleFG string = "#000000"
+	defaultDescFG          string = "#000000"
+	defaultDescBG          string = "#FFFFFF"
+	defaultSelectedDescFG  string = "#000000"
+	defaultSelectedDescBG  string = "#7FB685"
+	defaultPlayer          string = "mpv"
+	defaultBrowser         string = "firefox"
+)
 
-	conf := &Config{
-		FG:              "#000000",
-		BG:              "#FAF6F6",
-		TitleBG:         "#ffffff",
-		TitleFG:         "#191923",
-		SelectedTitleBG: "#7FB685",
-		SelectedTitleFG: "#191923",
-		DescFG:          "#191923",
-		DescBG:          "#FAF6F6",
-		SelectedDescFG:  "#191923",
-		SelectedDescBG:  "#7FB685",
+// Defaults
+var (
+	defaultConfDir  string = os.Getenv("HOME") + "/.config/sreader"
+	defaultDataDir  string = os.Getenv("HOME") + "/.local/share/sreader"
+	defaultConfPath string = defaultConfDir + "/config.toml"
+	defaultUrlsPath string = defaultConfDir + "/urls"
+	defaultDBPath   string = defaultDataDir + "/sreader.db"
+	Config                 = &SreaderConfig{
+		ConfDir:         defaultConfDir,
+		DataDir:         defaultDataDir,
+		ConfFile:        defaultConfPath,
+		UrlsFile:        defaultUrlsPath,
+		DBPath:          defaultDBPath,
+		BG:              defaultBG,
+		FG:              defaultFG,
+		TitleBG:         defaultTitleBG,
+		TitleFG:         defaultTitleFG,
+		SelectedTitleBG: defaultSelectedTitleBG,
+		SelectedTitleFG: defaultSelectedTitleFG,
+		DescFG:          defaultDescFG,
+		DescBG:          defaultDescBG,
+		SelectedDescFG:  defaultSelectedDescFG,
+		SelectedDescBG:  defaultSelectedDescBG,
 		Player:          defaultPlayer,
 		Browser:         defaultBrowser,
 	}
+)
 
-	// Load environment variables
+func LoadConfig(path string) {
+	// Define default configuration
 	if envPlayer := os.Getenv("PLAYER"); envPlayer != "" {
-		conf.Player = envPlayer
+		Config.Player = envPlayer
 	}
 	if envBrowser := os.Getenv("BROWSER"); envBrowser != "" {
-		conf.Browser = envBrowser
+		Config.Browser = envBrowser
 	}
 
 	// Load config file
@@ -60,9 +83,7 @@ func LoadConfig(path string) *Config {
 		file, err := os.Open(path)
 		if err == nil {
 			defer file.Close()
-			toml.NewDecoder(file).Decode(conf)
+			toml.NewDecoder(file).Decode(Config)
 		}
 	}
-
-	return conf
 }

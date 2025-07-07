@@ -21,8 +21,9 @@ import (
 var urls []string
 
 func Init() {
+	InitDB()
 	/* set configuration stuff */
-	urlsfile := os.Getenv("HOME") + config.Confdir + "/urls"
+	urlsfile := config.Config.ConfDir + "/urls"
 	_, err := os.Stat(urlsfile)
 	if os.IsNotExist(err) {
 		file, err := os.Create(urlsfile)
@@ -36,18 +37,6 @@ func Init() {
 		panic(err)
 	}
 	urls = strings.Split(string(dat), "\n")
-}
-
-func LoadFeeds() []*gofeed.Feed {
-	var feeds []*gofeed.Feed
-
-	for _, url := range urls {
-		if len(url) > 0 {
-			feeds = append(feeds, getFeed(url))
-		}
-	}
-
-	return feeds
 }
 
 /**
@@ -69,7 +58,7 @@ func OpenInPlayer(url string, player string) {
 }
 
 /**
- * Sync all feeds (download files). Will panic if any error occurs.
+ * Sync all feeds (download files).
  */
 func Sync() {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -81,6 +70,7 @@ func Sync() {
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
 	// Start workers
+	println("Getting feeds...")
 	for _, url := range urls {
 		if len(url) < 1 {
 			continue
@@ -96,6 +86,15 @@ func Sync() {
 	}()
 
 	wg.Wait()
+
+	println("Updating DB...")
+	// Update DB
+	feeds := loadRSSFeeds()
+	for _, feed := range feeds {
+		if err := AddFeed(feed); err != nil {
+			println("Error adding feed:", err)
+		}
+	}
 }
 
 /**
@@ -118,9 +117,9 @@ func formatHTMLString(s string) string {
 /**
  * Parse feed from data directory
  */
-func getFeed(url string) *gofeed.Feed {
+func loadRSSFeed(url string) *gofeed.Feed {
 	urlsum := sha1.Sum([]byte(url))
-	file, err := os.Open(os.Getenv("HOME") + config.Datadir + "/" + hex.EncodeToString(urlsum[:]))
+	file, err := os.Open(config.Config.DataDir + "/" + hex.EncodeToString(urlsum[:]))
 
 	if err != nil {
 		// try to sync feed if it doesn't exist
@@ -148,12 +147,24 @@ func getFeed(url string) *gofeed.Feed {
 	return feed
 }
 
+func loadRSSFeeds() []*gofeed.Feed {
+	var feeds []*gofeed.Feed
+
+	for _, url := range urls {
+		if len(url) > 0 {
+			feeds = append(feeds, loadRSSFeed(url))
+		}
+	}
+
+	return feeds
+}
+
 func syncWorker(url string, wg *sync.WaitGroup, ctx context.Context) {
 	defer wg.Done()
 
 	// Get file name for URL
 	urlsum := sha1.Sum([]byte(url))
-	filename := os.Getenv("HOME") + config.Datadir + "/" + hex.EncodeToString(urlsum[:])
+	filename := config.Config.DataDir + "/" + hex.EncodeToString(urlsum[:])
 	tmpFile := filename + ".tmp"
 
 	// Create request to fetch the feed

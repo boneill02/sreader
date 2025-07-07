@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/bmoneill/sreader/config"
@@ -21,10 +20,11 @@ func main() {
 		}
 	}
 
-	conf := config.LoadConfig(os.Getenv("HOME") + config.Confpath)
-	feeds := feed.LoadFeeds()
-	ui := ui.Init(feeds, conf)
+	config.LoadConfig(os.Getenv("HOME") + config.Config.ConfFile)
+	feeds := feed.GetFeeds()
+
+	ui := ui.Init(feeds)
 	if _, err := ui.Run(); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }

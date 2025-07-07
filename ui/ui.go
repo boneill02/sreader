@@ -10,7 +10,6 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/mmcdole/gofeed"
 )
 
 const titlestr = "sreader: "
@@ -40,8 +39,9 @@ func (f feedItem) Description() string { return f.desc }
 func (f feedItem) FilterValue() string { return f.title }
 
 type model struct {
-	feeds     []*gofeed.Feed
-	config    *config.Config
+	feeds     []*feed.Feed
+	entries   []*feed.Entry
+	config    *config.SreaderConfig
 	view      viewState
 	feedList  list.Model
 	entryList list.Model
@@ -55,20 +55,20 @@ type model struct {
 /**
  * Initializes the UI with the given feeds and configuration.
  */
-func Init(feeds []*gofeed.Feed, conf *config.Config) *tea.Program {
+func Init(feeds []*feed.Feed) *tea.Program {
 	width, height := 500, 24 // width set to 500, hopefully enough for most screens
 
 	// Styles
-	bg := lipgloss.Color(conf.BG)
-	fg := lipgloss.Color(conf.FG)
-	selectedTitleFG := lipgloss.Color(conf.SelectedTitleFG)
-	selectedTitleBG := lipgloss.Color(conf.SelectedTitleBG)
-	selectedDescFG := lipgloss.Color(conf.SelectedDescFG)
-	selectedDescBG := lipgloss.Color(conf.SelectedDescBG)
-	titleFG := lipgloss.Color(conf.TitleFG)
-	titleBG := lipgloss.Color(conf.TitleBG)
-	descFG := lipgloss.Color(conf.DescFG)
-	descBG := lipgloss.Color(conf.DescBG)
+	bg := lipgloss.Color(config.Config.BG)
+	fg := lipgloss.Color(config.Config.FG)
+	selectedTitleFG := lipgloss.Color(config.Config.SelectedTitleFG)
+	selectedTitleBG := lipgloss.Color(config.Config.SelectedTitleBG)
+	selectedDescFG := lipgloss.Color(config.Config.SelectedDescFG)
+	selectedDescBG := lipgloss.Color(config.Config.SelectedDescBG)
+	titleFG := lipgloss.Color(config.Config.TitleFG)
+	titleBG := lipgloss.Color(config.Config.TitleBG)
+	descFG := lipgloss.Color(config.Config.DescFG)
+	descBG := lipgloss.Color(config.Config.DescBG)
 
 	// Load list delegate with styles
 	listDelegate = list.NewDefaultDelegate()
@@ -89,7 +89,7 @@ func Init(feeds []*gofeed.Feed, conf *config.Config) *tea.Program {
 		Background(selectedDescBG).
 		Width(width)
 
-	m := newModel(feeds, conf, width, height)
+	m := newModel(feeds, width, height)
 	m.feedList.SetDelegate(listDelegate)
 	appStyle = lipgloss.NewStyle().
 		Foreground(fg).
@@ -159,12 +159,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			feed.Sync()
 		case "o":
 			if m.view == feedView || m.view == entryView {
-				link := m.feeds[m.currFeed].Items[m.currEntry].Link
+				link := m.feeds[m.currFeed].Entries[m.currEntry].URL
 				feed.OpenInBrowser(link, m.config.Browser)
 			}
 		case "v":
 			if m.view == feedView || m.view == entryView {
-				link := m.feeds[m.currFeed].Items[m.currEntry].Link
+				link := m.feeds[m.currFeed].Entries[m.currEntry].URL
 				feed.OpenInPlayer(link, m.config.Player)
 			}
 		default:
@@ -187,10 +187,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *model) updateEntryList() {
 	entryItems := []list.Item{}
 	if m.currFeed < len(m.feeds) {
-		for _, item := range m.feeds[m.currFeed].Items {
+		for _, item := range m.feeds[m.currFeed].Entries {
 			entryItems = append(entryItems, feedItem{
 				title: item.Title,
-				link:  item.Link,
+				link:  item.URL,
 			})
 		}
 	}
@@ -204,12 +204,12 @@ func (m *model) updateEntryList() {
  * In entryView, updates the viewport with the content of the currently selected entry.
  */
 func (m *model) updateViewport() {
-	if m.currFeed < len(m.feeds) && m.currEntry < len(m.feeds[m.currFeed].Items) {
+	if m.currFeed < len(m.feeds) && m.currEntry < len(m.feeds[m.currFeed].Entries) {
 		// Set the content to the selected entry's content
-		content := "\nDate: " + m.feeds[m.currFeed].Items[m.currEntry].PublishedParsed.String()
-		content += "\nLink: " + m.feeds[m.currFeed].Items[m.currEntry].Link
-		content += "\n\n" + htmlTruncate(m.feeds[m.currFeed].Items[m.currEntry].Description, m.width-2)
-		content += "\n\n" + htmlTruncate(m.feeds[m.currFeed].Items[m.currEntry].Content, m.width-2)
+		content := "\nDate: " + m.feeds[m.currFeed].Entries[m.currEntry].DatePublished
+		content += "\nLink: " + m.feeds[m.currFeed].Entries[m.currEntry].URL
+		content += "\n\n" + htmlTruncate(m.feeds[m.currFeed].Entries[m.currEntry].Description, m.width-2)
+		content += "\n\n" + htmlTruncate(m.feeds[m.currFeed].Entries[m.currEntry].Content, m.width-2)
 		m.entryView.SetContent(content)
 		m.entryView.GotoTop()
 	}
@@ -277,37 +277,28 @@ func htmlTruncate(content string, width int) string {
 	return string(result)
 }
 
-func newModel(feeds []*gofeed.Feed, conf *config.Config, width, height int) model {
+func newModel(feeds []*feed.Feed, width, height int) model {
 	feedItems := make([]list.Item, len(feeds))
 	for i, f := range feeds {
-		feedItems[i] = feedItem{title: f.Title, desc: f.Description, link: ""}
+		feedItems[i] = feedItem{title: f.Title, desc: f.Description, link: f.URL}
 	}
 	feedList := list.New(feedItems, list.NewDefaultDelegate(), width, height)
 	feedList.Title = "Feeds"
 	feedList.SetShowHelp(false)
 
 	entryItems := []list.Item{}
-	if len(feeds) > 0 {
-		for _, item := range feeds[0].Items {
-			entryItems = append(entryItems, feedItem{
-				title: item.Title,
-				desc:  item.Description,
-				link:  item.Link,
-			})
-		}
-	}
 	entryList := list.New(entryItems, list.NewDefaultDelegate(), width, height)
 	entryList.Title = "Entries"
 	entryList.SetShowHelp(false)
 
 	vp := viewport.New(width, height)
-	if len(feeds) > 0 && len(feeds[0].Items) > 0 {
-		vp.SetContent(feeds[0].Items[0].Content)
+	if len(feeds) > 0 && len(feeds[0].Entries) > 0 {
+		vp.SetContent(feeds[0].Entries[0].Content)
 	}
 
 	return model{
 		feeds:     feeds,
-		config:    conf,
+		config:    config.Config,
 		view:      mainView,
 		feedList:  feedList,
 		entryList: entryList,
