@@ -40,7 +40,6 @@ func (f feedItem) FilterValue() string { return f.title }
 
 type model struct {
 	feeds     []*feed.Feed
-	entries   []*feed.Entry
 	config    *config.SreaderConfig
 	view      viewState
 	feedList  list.Model
