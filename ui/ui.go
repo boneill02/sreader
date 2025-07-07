@@ -124,6 +124,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.view = mainView
 			case entryView:
 				m.view = feedView
+				m.currEntry = 0
 			}
 		case "l":
 			switch m.view {
