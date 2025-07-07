@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"html"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -33,13 +34,13 @@ func Init() {
 	if os.IsNotExist(err) {
 		file, err := os.Create(urlsfile)
 		if err != nil {
-			panic(err)
+			log.Fatalln("Failed to create URLs file", err.Error())
 		}
 		defer file.Close()
 	}
 	dat, err := os.ReadFile(urlsfile)
 	if err != nil {
-		panic(err)
+		log.Fatalln("Failed to read URLs file", err.Error())
 	}
 	urls = strings.Split(string(dat), "\n")
 }
@@ -70,7 +71,7 @@ func Sync() {
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
 	// Start workers
-	println("Getting feeds...")
+	log.Println("Getting feeds...")
 	for i := range urls {
 		url := urls[i]
 		if len(url) < 1 {
@@ -93,18 +94,18 @@ func Sync() {
 
 	wg.Wait()
 
-	println("Updating DB...")
+	log.Println("Updating DB...")
 	feed_contents := loadRSSFeeds()
 	for _, f := range feed_contents {
 		if f != nil {
 			if id, err := AddFeed(f); err != nil {
-				println("Error adding feed:", err.Error())
+				log.Println("Error adding feed:", err.Error())
 			} else {
 				MarkUpdated(id)
 			}
 		}
 	}
-	println("Done.")
+	log.Println("Done.")
 }
 
 // Unescape HTML entities and convert to ASCII
@@ -128,7 +129,7 @@ func loadRSSFeed(url string) *gofeed.Feed {
 	filename := config.Config.DataDir + "/" + hex.EncodeToString(urlsum[:]) + ".tmp"
 	file, err := os.Open(filename)
 	if err != nil {
-		println("Failed to open temporary file:", err.Error())
+		log.Println("Failed to open temporary file:", err.Error())
 		return nil
 	}
 
@@ -136,7 +137,7 @@ func loadRSSFeed(url string) *gofeed.Feed {
 	feed, err := fp.Parse(file)
 
 	if err != nil {
-		println("Failed to parse feed (possibly wrong URL or badly formatted XML?)")
+		log.Println("Failed to parse feed (possibly wrong URL or badly formatted XML?)")
 		return nil
 	}
 
@@ -178,7 +179,7 @@ func syncWorker(url string, modTime string, wg *sync.WaitGroup, ctx context.Cont
 	// Create request to fetch the feed
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		println("Failed to create request for URL:", url, "Error:", err)
+		log.Println("Failed to create request for URL:", url, "Error:", err)
 		return
 	}
 
@@ -190,13 +191,13 @@ func syncWorker(url string, modTime string, wg *sync.WaitGroup, ctx context.Cont
 	// Do GET request
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		panic(err)
+		log.Fatalln("Failed to fetch feed:", url, "Error:", err)
 	}
 
 	// Create the temporary file
 	out, err := os.Create(filename)
 	if err != nil {
-		panic(err)
+		log.Fatalln("Failed to create temporary file:", err)
 	}
 
 	// Copy response body to the temporary file
@@ -206,7 +207,7 @@ func syncWorker(url string, modTime string, wg *sync.WaitGroup, ctx context.Cont
 			panic(err)
 		}
 	} else if resp.StatusCode != http.StatusNotModified {
-		panic("Failed to download feed \"" + url + "\": " + resp.Status)
+		log.Println("Failed to download feed \"" + url + "\": " + resp.Status)
 	}
 
 	out.Close()
@@ -214,7 +215,7 @@ func syncWorker(url string, modTime string, wg *sync.WaitGroup, ctx context.Cont
 	select {
 	case <-ctx.Done():
 		// Context was cancelled, clean up and exit
-		println("Sync cancelled for URL:", url)
+		log.Println("Sync cancelled for URL:", url)
 		os.Remove(filename) // Clean up temporary file
 		return
 	default:

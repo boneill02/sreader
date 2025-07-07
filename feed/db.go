@@ -2,6 +2,7 @@ package feed
 
 import (
 	"database/sql"
+	"log"
 
 	"github.com/bmoneill/sreader/config"
 	_ "github.com/mattn/go-sqlite3"
@@ -32,12 +33,12 @@ var conn *sql.DB
 
 // Initialize SQLite database connection and creates the necessary tables if they do not exist.
 func InitDB() {
-	println("Initializing database...")
+	log.Println("Initializing database...")
 	// Initialize the SQLite database connection
 	var err error
 	conn, err = sql.Open("sqlite3", config.Config.DBFile)
 	if err != nil {
-		panic(err)
+		log.Fatalln("Failed to initialize database.", err.Error())
 	}
 
 	// Create the tables if they do not exist
@@ -50,7 +51,7 @@ func InitDB() {
 	)`)
 
 	if err != nil {
-		panic(err)
+		log.Fatalln("Error creating feeds table:", err.Error())
 	}
 
 	_, err = conn.Exec(`CREATE TABLE IF NOT EXISTS entries (
@@ -66,7 +67,7 @@ func InitDB() {
 	)`)
 
 	if err != nil {
-		panic(err)
+		log.Fatalln("Error creating entries table:", err.Error())
 	}
 }
 
@@ -83,37 +84,37 @@ func AddFeed(feed *gofeed.Feed) (int64, error) {
 	// Check if the feed already exists
 	err = conn.QueryRow("SELECT EXISTS(SELECT 1 FROM feeds WHERE url = ?)", feed.Link).Scan(&exists)
 	if err != nil {
-		println("Error checking if feed exists:", err.Error())
+		log.Println("Error checking if feed exists:", err.Error())
 		return 0, err
 	}
 
 	if exists {
 		// Get ID of existing feed
-		println("Feed already exists in DB, updating:", feed.Link)
+		log.Println("Feed already exists in DB, updating:", feed.Link)
 		stmt, err = conn.Prepare("SELECT id FROM feeds WHERE url = ?")
 		if err != nil {
-			println("Error preparing statement:", err.Error())
+			log.Println("Error preparing statement:", err.Error())
 			return 0, err
 		}
 		defer stmt.Close()
 		err = stmt.QueryRow(feed.Link).Scan(&id)
 		if err != nil {
-			println("Error querying feed ID:", err.Error())
+			log.Println("Error querying feed ID:", err.Error())
 			return 0, err
 		}
 	} else {
 		// Insert new feed into the database
-		println("Adding new feed to DB: ", feed.Link)
+		log.Println("Adding new feed to DB: ", feed.Link)
 		stmt, err = conn.Prepare("INSERT INTO feeds (url, title, description) VALUES (?, ?, ?)")
 		if err != nil {
-			println("Error preparing statement:", err.Error())
+			log.Println("Error preparing statement:", err.Error())
 			return 0, err
 		}
 		defer stmt.Close()
 		res, err = stmt.Exec(feed.Link, feed.Title, feed.Description)
 
 		if err != nil {
-			println("Error inserting feed:", err)
+			log.Println("Error inserting feed:", err)
 			return 0, err
 		}
 		id, _ = res.LastInsertId()
@@ -123,12 +124,12 @@ func AddFeed(feed *gofeed.Feed) (int64, error) {
 	for _, item := range feed.Items {
 		err = AddEntry(id, item.Link, item.Title, item.Description, item.PublishedParsed.UTC().Format("Tue, 15 Nov 1994 12:45:26 GMT"))
 		if err != nil {
-			println("Error adding entry:", err)
+			log.Println("Error adding entry:", err)
 			return 0, err
 		}
 	}
 
-	println(feed.Title, "added/updated successfully,", len(feed.Items), "entries.")
+	log.Println(feed.Title, "added/updated successfully,", len(feed.Items), "entries.")
 	return id, err
 }
 
@@ -173,7 +174,7 @@ func GetEntries(feedID int) []*Entry {
 
 		err := rows.Scan(&id, &url, &title, &description, &datePublished, &read, &content)
 		if err != nil {
-			println("Error scanning entry:", err.Error())
+			log.Println("Error scanning entry:", err.Error())
 			return nil
 		}
 
@@ -235,7 +236,7 @@ func GetFeeds() []*Feed {
 			Entries:     GetEntries(id),
 		}
 		feeds = append(feeds, feed)
-		println(len(feed.Entries), "entries loaded for feed:", feed.Title, " (", id, ")")
+		log.Println(len(feed.Entries), "entries loaded for feed:", feed.Title, " (", id, ")")
 	}
 
 	return feeds

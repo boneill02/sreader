@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	"github.com/bmoneill/sreader/config"
@@ -25,6 +26,6 @@ func main() {
 	feeds := feed.GetFeeds()
 	ui := ui.Init(feeds)
 	if _, err := ui.Run(); err != nil {
-		panic(err)
+		log.Fatalln("Failed to start UI", err.Error())
 	}
 }
