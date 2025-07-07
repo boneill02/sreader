@@ -30,9 +30,7 @@ type Feed struct {
 
 var conn *sql.DB
 
-/**
- * Initializes the SQLite database connection and creates the necessary tables if they do not exist.
- */
+// Initialize SQLite database connection and creates the necessary tables if they do not exist.
 func InitDB() {
 	println("Initializing database...")
 	// Initialize the SQLite database connection
@@ -72,18 +70,17 @@ func InitDB() {
 	}
 }
 
-/**
- * Adds a feed to the database. If the feed already exists, it adds any new entries.
- * If the feed does not exist, it inserts a new feed and its entries.
- */
+// Adds a feed to the database.
+// If the feed already exists, it adds any new entries.
+// If the feed does not exist, it inserts a new feed and its entries.
 func AddFeed(feed *gofeed.Feed) (int64, error) {
-	// Check if the feed already exists
 	var exists bool
 	var id int64
 	var stmt *sql.Stmt
 	var res sql.Result
 	var err error
 
+	// Check if the feed already exists
 	err = conn.QueryRow("SELECT EXISTS(SELECT 1 FROM feeds WHERE url = ?)", feed.Link).Scan(&exists)
 	if err != nil {
 		println("Error checking if feed exists:", err.Error())
@@ -124,7 +121,7 @@ func AddFeed(feed *gofeed.Feed) (int64, error) {
 
 	// Add entries
 	for _, item := range feed.Items {
-		err = AddEntry(id, item.Link, item.Title, item.Description, item.PublishedParsed.Format("2006-01-02 15:04:05"))
+		err = AddEntry(id, item.Link, item.Title, item.Description, item.PublishedParsed.UTC().Format("Tue, 15 Nov 1994 12:45:26 GMT"))
 		if err != nil {
 			println("Error adding entry:", err)
 			return 0, err
@@ -135,6 +132,7 @@ func AddFeed(feed *gofeed.Feed) (int64, error) {
 	return id, err
 }
 
+// Adds an entry to the database if it does not already exist.
 func AddEntry(feedID int64, url, title, description string, datePublished string) error {
 	// Check if the entry already exists (by feed_id and date_published)
 	var exists bool
@@ -157,6 +155,7 @@ func AddEntry(feedID int64, url, title, description string, datePublished string
 	return err
 }
 
+// Get all entries for feed with feedID
 func GetEntries(feedID int) []*Entry {
 	// Retrieve entries for a specific feed
 	rows, err := conn.Query("SELECT id, url, title, description, date_published, read, content FROM entries WHERE feed_id = ?", feedID)
@@ -208,8 +207,8 @@ func GetFeedByURL(url string) *Feed {
 	return nil
 }
 
+// Retrieve all feeds
 func GetFeeds() []*Feed {
-	// Retrieve all feeds
 	rows, err := conn.Query("SELECT id, url, title, description, last_updated FROM feeds")
 	if err != nil {
 		return nil
@@ -242,8 +241,8 @@ func GetFeeds() []*Feed {
 	return feeds
 }
 
+// Mark an entry as read
 func MarkRead(entryID int) error {
-	// Mark an entry as read
 	stmt, err := conn.Prepare("UPDATE entries SET read = 1 WHERE id = ?")
 	if err != nil {
 		return err
@@ -254,8 +253,8 @@ func MarkRead(entryID int) error {
 	return err
 }
 
+// Update the last updated time for a feed
 func MarkUpdated(feedID int64) error {
-	// Update the last updated time for a feed
 	stmt, err := conn.Prepare("UPDATE feeds SET last_updated = CURRENT_TIMESTAMP WHERE id = ?")
 	if err != nil {
 		return err
