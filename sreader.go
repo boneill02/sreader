@@ -14,7 +14,7 @@ func main() {
 
 	feed.InitDB()
 
-	/* sync and quit if called with the arg "sync" */
+	// sync and quit if called with the arg "sync"
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
 		case "sync":

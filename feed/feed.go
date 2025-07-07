@@ -157,6 +157,7 @@ func syncWorker(url string, modTime string, wg *sync.WaitGroup, ctx context.Cont
 		return
 	}
 
+	// HTTP headers
 	req.Header.Set("User-Agent", "sreader/1.0")
 	if modTime != "" {
 		req.Header.Set("If-Modified-Since", modTime)
@@ -190,7 +191,7 @@ func syncWorker(url string, modTime string, wg *sync.WaitGroup, ctx context.Cont
 	case <-ctx.Done():
 		// Context was cancelled, clean up and exit
 		log.Println("Sync cancelled for URL:", url)
-		os.Remove(filename) // Clean up temporary file
+		os.Remove(filename)
 		return
 	default:
 		return

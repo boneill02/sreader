@@ -179,9 +179,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-/**
- * In entryList, updates the list of entries based on the currently selected feed.
- */
+// In entryList, updates the list of entries based on the currently selected feed.
 func (m *model) updateEntryList() {
 	entryItems := []list.Item{}
 	if m.currFeed < len(m.feeds) {
@@ -275,13 +273,16 @@ func newModel(feeds []*feed.Feed, width, height int) model {
 	for i, f := range feeds {
 		feedItems[i] = feedItem{title: f.Title, desc: f.Description, link: f.URL}
 	}
+
 	feedList := list.New(feedItems, list.NewDefaultDelegate(), width, height)
 	feedList.Title = "Feeds"
-	feedList.SetShowHelp(false)
 
 	entryItems := []list.Item{}
 	entryList := list.New(entryItems, list.NewDefaultDelegate(), width, height)
 	entryList.Title = "Entries"
+
+	// Hide duplicated keybind help strings (we implement our own)
+	feedList.SetShowHelp(false)
 	entryList.SetShowHelp(false)
 
 	vp := viewport.New(width, height)
