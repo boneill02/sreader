@@ -114,7 +114,7 @@ func AddFeed(feed *gofeed.Feed) (int64, error) {
 		res, err = stmt.Exec(feed.Link, feed.Title, feed.Description)
 
 		if err != nil {
-			log.Println("Error inserting feed:", err)
+			log.Println("Error inserting feed:", err.Error())
 			return 0, err
 		}
 		id, _ = res.LastInsertId()
@@ -124,7 +124,7 @@ func AddFeed(feed *gofeed.Feed) (int64, error) {
 	for _, item := range feed.Items {
 		err = AddEntry(id, item.Link, item.Title, item.Description, item.PublishedParsed.UTC().Format("Tue, 15 Nov 1994 12:45:26 GMT"))
 		if err != nil {
-			log.Println("Error adding entry:", err)
+			log.Println("Error adding entry:", err.Error())
 			return 0, err
 		}
 	}
@@ -166,11 +166,18 @@ func GetEntries(feedID int) []*Entry {
 	defer rows.Close()
 
 	var entries []*Entry
+
+	// Scan rows into Entry structs
 	for rows.Next() {
-		var id int
-		var url, title, description, content string
-		var datePublished string
-		var read int
+		var (
+			id            int
+			url           string
+			title         string
+			description   string
+			content       string
+			datePublished string
+			read          int
+		)
 
 		err := rows.Scan(&id, &url, &title, &description, &datePublished, &read, &content)
 		if err != nil {
