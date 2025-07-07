@@ -58,7 +58,7 @@ func OpenInPlayer(url string, player string) {
 }
 
 /**
- * Sync all feeds (download files).
+ * Sync all feeds.
  */
 func Sync() {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -71,13 +71,12 @@ func Sync() {
 
 	// Start workers
 	println("Getting feeds...")
-	for _, url := range urls {
-		if len(url) < 1 {
-			continue
+	feeds := GetFeeds()
+	for _, feed := range feeds {
+		if feed != nil {
+			wg.Add(1)
+			go syncWorker(feed.URL, feed.LastUpdated, &wg, ctx)
 		}
-
-		wg.Add(1)
-		go syncWorker(url, &wg, ctx)
 	}
 
 	go func() {
@@ -89,11 +88,13 @@ func Sync() {
 
 	println("Updating DB...")
 	// Update DB
-	feeds := loadRSSFeeds()
-	for _, feed := range feeds {
-		if feed != nil {
-			if err := AddFeed(feed); err != nil {
+	feed_contents := loadRSSFeeds()
+	for _, f := range feed_contents {
+		if f != nil {
+			if id, err := AddFeed(f); err != nil {
 				println("Error adding feed:", err)
+			} else {
+				MarkUpdated(id)
 			}
 		}
 	}
@@ -167,7 +168,7 @@ func loadRSSFeeds() []*gofeed.Feed {
 	return feeds
 }
 
-func syncWorker(url string, wg *sync.WaitGroup, ctx context.Context) {
+func syncWorker(url string, modTime string, wg *sync.WaitGroup, ctx context.Context) {
 	defer wg.Done()
 
 	// Get file name for URL
@@ -182,13 +183,7 @@ func syncWorker(url string, wg *sync.WaitGroup, ctx context.Context) {
 		return
 	}
 
-	// Try to read the last modified time from the local file, if it exists
-	if fi, err := os.Stat(filename); err == nil {
-		modTime := fi.ModTime().UTC().Format(http.TimeFormat)
-		req.Header.Set("If-Modified-Since", modTime)
-	}
-
-	// Do get request
+	// Do GET request
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		panic(err)
