@@ -43,6 +43,14 @@ func Init() {
 		log.Fatalln("Failed to read URLs file", err.Error())
 	}
 	urls = strings.Split(string(dat), "\n")
+
+	if config.Config.URLs != nil {
+		for i := range config.Config.URLs {
+			if config.Config.URLs[i] != nil && len(strings.TrimSpace(*config.Config.URLs[i])) > 0 {
+				urls = append(urls, *config.Config.URLs[i])
+			}
+		}
+	}
 }
 
 // Open URL in web browser

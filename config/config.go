@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"os"
 
 	"github.com/BurntSushi/toml"
@@ -10,7 +11,7 @@ type SreaderConfig struct {
 	ConfDir         string
 	DataDir         string
 	ConfFile        string
-	URLsFile        string
+	URLs            []*string
 	DBFile          string
 	BG              string
 	FG              string
@@ -46,13 +47,12 @@ var (
 	defaultConfDir  string = os.Getenv("HOME") + "/.config/sreader"
 	defaultDataDir  string = os.Getenv("HOME") + "/.local/share/sreader"
 	defaultConfPath string = defaultConfDir + "/config.toml"
-	defaultURLsFile string = defaultConfDir + "/urls"
 	defaultDBFile   string = defaultDataDir + "/sreader.db"
 	Config                 = &SreaderConfig{
 		ConfDir:         defaultConfDir,  // Not usable in config file
 		ConfFile:        defaultConfPath, // Not usable in config file
 		DataDir:         defaultDataDir,
-		URLsFile:        defaultURLsFile,
+		URLs:            nil,
 		DBFile:          defaultDBFile,
 		BG:              defaultBG,
 		FG:              defaultFG,
@@ -70,6 +70,10 @@ var (
 )
 
 func LoadConfig(path string) {
+	// Make directories if non-existent
+	os.MkdirAll(Config.DataDir, os.ModePerm)
+	os.MkdirAll(Config.ConfDir, os.ModePerm)
+
 	// Define default configuration
 	if envPlayer := os.Getenv("PLAYER"); envPlayer != "" {
 		Config.Player = envPlayer
@@ -87,7 +91,8 @@ func LoadConfig(path string) {
 		}
 	}
 
-	// Make directories if non-existent
-	os.MkdirAll(Config.DataDir, os.ModePerm)
-	os.MkdirAll(Config.ConfDir, os.ModePerm)
+	if Config.URLs == nil {
+		log.Fatalln("No URLs in configuration.")
+	}
+
 }
