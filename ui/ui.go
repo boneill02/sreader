@@ -122,6 +122,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			case feedView:
 				m.view = mainView
+				m.currFeed = 0
 			case entryView:
 				m.view = feedView
 				m.currEntry = 0
