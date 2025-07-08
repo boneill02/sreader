@@ -33,17 +33,22 @@ sreader uses Vim-like keybindings by default.
 
 `sreader` can load settings through a config file located at
 `~/.config/sreader/config.toml`. See [config_example.toml](config_example.toml)
-for an example.
+for an example (everything there except the URL list are the defaults).
 
 A config file with the URL list must be present before running `sreader`.
-
-If `Player` or `Browser` are not set in your `config.toml`, `sreader` will
-use your `$PLAYER` and `$BROWSER` environment variables as fallbacks. If those
-are also not set, `sreader` will default to `mpv` and `firefox` respectively.
 
 The following settings are supported (colors are represented by hex strings):
 
 - `URLs` (**REQUIRED**): List of feed URLs
+
+### Paths
+
+- `DBFile`: Path to the database
+- `LogFile`: Path to the log file
+- `TmpDir`: Where to store temporary files (used during sync)
+
+### Colors
+
 - `FG`: Primary text color for non-selected list items (and entry contents)
 - `BG`: Primary background color for non-selected list items (and entry contents)
 - `TitleFG`: Non-selected list entry title foreground color
@@ -54,8 +59,25 @@ The following settings are supported (colors are represented by hex strings):
 - `DescBG`: Non-selected list entry description background color
 - `SelectedDescFG`: Selected list entry description foreground color
 - `SelectedDescBG`: Selected list entry description background color
-- `Player`: Path to default video player
+
+### Keys
+
+- `UpKey`: Move up
+- `DownKey`: Move down
+- `LeftKey`: Move left
+- `RightKey`: Move right
+- `QuitKey`: Quit
+- `SyncKey`: Sync feeds
+- `BrowserKey`: Open entry in browser
+- `PlayerKey`: Open entry in media player
+
+### External applications
+
+If these are not set in your configuration file but the `$BROWSER` or `$PLAYER`
+environment variables are set, those will be used respectively.
+
 - `Browser`: Path to default browser
+- `Player`: Path to default video player
 
 ## Screenshots
 
