@@ -162,9 +162,9 @@ func LoadConfig(path string) {
 	dbDir := getDirectoryOfFile(Config.DBFile)
 	tmpDir := ExpandHome(Config.TmpDir)
 	logDir := getDirectoryOfFile(Config.LogFile)
-	os.MkdirAll(tmpDir, 0700) // Create temporary directory if it does not exist
-	os.MkdirAll(dbDir, 0700)  // Create directory for database file if it does not exist
-	os.MkdirAll(logDir, 0700) // Create directory for log file if it does not exist
+	os.MkdirAll(tmpDir, 0700)
+	os.MkdirAll(dbDir, 0700)
+	os.MkdirAll(logDir, 0700)
 
 	log.Println("Configuration loaded successfully.")
 }
