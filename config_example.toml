@@ -8,6 +8,8 @@ URLs = [
 
 # Paths
 DBFile = "/home/me/.local/share/sreader/sreader.db"
+LogFile = "/home/me/.local/share/sreader/sreader.log"
+TmpDir = "/tmp/sreader"
 
 # Foreground and background colors
 # These colors are used for the text and background of the entire viewport
@@ -26,7 +28,17 @@ DescBG = "#000000" # Black
 SelectedDescFG = "#000000" # Black
 SelectedDescBG = "#306BAC" # Light blue
 
-# Player to use for opening video URLs
+# Key bindings
+UpKey = "j" # Move up
+DownKey = "k" # Move down
+LeftKey = "h" # Go back to the previous view
+RightKey = "l" # Open the selected item
+QuitKey = "q" # Quit the application
+SyncKey = "r" # Sync feeds
+BrowserKey = "o" # Open the selected entry in the browser
+PlayerKey = "v" # Play the selected entry (video/audio)
+
+# Player to use for opening media
 Player = "mpv"
 
 # Browser to use for opening web links
