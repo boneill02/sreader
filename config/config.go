@@ -137,9 +137,10 @@ func LoadConfig(path string) {
 
 	// Load config file
 	if path != "" {
-		file, err := os.Open(ExpandHome(path))
+		path = ExpandHome(path)
+		file, err := os.Open(path)
 		if err != nil {
-			log.Fatalln("Failed to open configuration file:", err.Error())
+			WriteDefaultConfig(path)
 		}
 		defer file.Close()
 		_, err = toml.NewDecoder(file).Decode(Config)
@@ -161,6 +162,23 @@ func LoadConfig(path string) {
 	os.MkdirAll(logDir, 0700) // Create directory for log file if it does not exist
 
 	log.Println("Configuration loaded successfully.")
+}
+
+func WriteDefaultConfig(path string) {
+	file, err := os.Create(ExpandHome(path))
+	if err != nil {
+		log.Fatalln("Failed to create configuration file:", err.Error())
+	}
+	defer file.Close()
+
+	// Write default configuration to file
+	if err := toml.NewEncoder(file).Encode(Config); err != nil {
+		log.Fatalln("Failed to write default configuration:", err.Error())
+	}
+
+	log.Println("Default configuration written to", path)
+	log.Println("Please edit the configuration file to set your RSS feed URLs.")
+	os.Exit(0)
 }
 
 func getDirectoryOfFile(path string) string {
