@@ -220,7 +220,10 @@ func (m model) View() string {
 	case entryView:
 		s += m.entryView.View()
 	}
-	s += "\n[h] back [l] enter [j/k] move [q] quit [r] sync [o] open [v] play"
+	s += "\n[" + config.Config.LeftKey + "] back [" + config.Config.RightKey +
+	     "] enter [" + config.Config.DownKey + "/" + config.Config.UpKey +
+		 "] move [" + config.Config.QuitKey + "] quit [" + config.Config.SyncKey +
+		 "] sync [" + config.Config.BrowserKey + "] open [" + config.Config.PlayerKey + "] play"
 
 	// Render the entire UI with the app style
 	return appStyle.Render(lipgloss.Place(m.width, m.height, lipgloss.Left, lipgloss.Top, s))
