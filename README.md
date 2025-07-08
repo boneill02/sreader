@@ -51,6 +51,16 @@ and then add your feed URLs. Colors must be in hex format.
 sreader will also use `$BROWSER` and `$PLAYER` environment variables if these
 are not defined in your configuration file.
 
+If `$XDG_CONFIG_HOME` is set, sreader will load config files at
+`$XDG_CONFIG_HOME/sreader/sreader.toml` by default.
+
+If `$XDG_DATA_HOME` is set (and these paths are not overridden in your
+configuration file), sreader will default to the following paths:
+
+- `DBFile`: `$XDG_DATA_HOME/sreader/sreader.db`
+- `LogFile`: `$XDG_DATA_HOME/sreader/sreader.log`
+- `TmpDir`: `$XDG_DATA_HOME/sreader`
+
 ## Screenshots
 
 ### Index view
