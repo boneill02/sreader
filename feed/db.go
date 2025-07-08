@@ -33,12 +33,12 @@ var conn *sql.DB
 
 // Initialize SQLite database connection and creates the necessary tables if they do not exist.
 func InitDB() {
-	log.Println("Initializing database...")
+	log.Println("Loading database...")
 	// Initialize the SQLite database connection
 	var err error
 	conn, err = sql.Open("sqlite3", config.Config.DBFile)
 	if err != nil {
-		log.Fatalln("Failed to initialize database.", err.Error())
+		log.Fatalln("Failed to load database.", err.Error())
 	}
 
 	// Create the tables if they do not exist
@@ -69,6 +69,8 @@ func InitDB() {
 	if err != nil {
 		log.Fatalln("Error creating entries table:", err.Error())
 	}
+
+	log.Println("Database loaded successfully.")
 }
 
 // Adds a feed to the database.
