@@ -16,13 +16,13 @@ TmpDir = "/tmp/sreader"
 FG = "#BFD7EA" # Very light blue
 BG = "#000000" # Black
 
-# Title colors for the entry list
+# Title colors for lists
 TitleFG = "#BFD7EA" # Very light blue
 TitleBG = "#000000" # Black
 SelectedTitleFG = "#000000" # Black
 SelectedTitleBG = "#306BAC" # Light blue
 
-# Description colors for the entry list
+# Description colors for lists
 DescFG = "#BFD7EA" # Very light blue
 DescBG = "#000000" # Black
 SelectedDescFG = "#000000" # Black
