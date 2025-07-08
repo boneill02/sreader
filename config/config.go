@@ -48,7 +48,7 @@ const (
 	defaultConfFile string = "~/.config/sreader/config.toml"
 	defaultDBFile   string = "~/.local/share/sreader/sreader.db"
 	defaultLogFile  string = "~/.local/share/sreader/sreader.log"
-	defaultTmpDir   string = "/tmp/sreader"
+	defaultTmpDir   string = "~/.local/share/sreader"
 
 	// Default colors
 	defaultBG              string = "#000000"
@@ -127,12 +127,17 @@ func ExpandHome(path string) string {
 }
 
 func LoadConfig(path string) {
-	// Define default configuration
+	// Load environment variables if set
 	if envPlayer := os.Getenv("PLAYER"); envPlayer != "" {
 		Config.Player = envPlayer
 	}
 	if envBrowser := os.Getenv("BROWSER"); envBrowser != "" {
 		Config.Browser = envBrowser
+	}
+	if dataHome := os.Getenv("XDG_DATA_HOME"); dataHome != "" {
+		Config.DBFile = dataHome + "/sreader/sreader.db"
+		Config.LogFile = dataHome + "/sreader/sreader.log"
+		Config.TmpDir = dataHome + "/sreader"
 	}
 
 	// Load config file
@@ -157,9 +162,9 @@ func LoadConfig(path string) {
 	dbDir := getDirectoryOfFile(Config.DBFile)
 	tmpDir := ExpandHome(Config.TmpDir)
 	logDir := getDirectoryOfFile(Config.LogFile)
-	os.MkdirAll(tmpDir, 0700) // Create temporary directory if it does not exist
-	os.MkdirAll(dbDir, 0700)  // Create directory for database file if it does not exist
-	os.MkdirAll(logDir, 0700) // Create directory for log file if it does not exist
+	os.MkdirAll(tmpDir, 0700)
+	os.MkdirAll(dbDir, 0700)
+	os.MkdirAll(logDir, 0700)
 
 	log.Println("Configuration loaded successfully.")
 }
