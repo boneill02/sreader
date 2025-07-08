@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	// Modify default config file path if XDG_CONFIG_HOME is set
+	// Modify default config file path if $XDG_CONFIG_HOME is set
 	confPath := config.ExpandHome(config.Config.ConfFile)
 	if xdgConfDir := os.Getenv("XDG_CONFIG_HOME"); xdgConfDir != "" {
 		confPath = xdgConfDir + "/sreader/config.toml"
