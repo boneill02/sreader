@@ -99,8 +99,7 @@ func formatHTMLString(s string) string {
 
 // Called by loadRSSFeeds. Parse feed from temporary file grabbed by syncWorkers and remove the file.
 func loadRSSFeed(url string) *gofeed.Feed {
-	urlsum := sha1.Sum([]byte(url))
-	filename := config.Config.DataDir + "/" + hex.EncodeToString(urlsum[:]) + ".tmp"
+	filename := getTmpFilename(url)
 	file, err := os.Open(filename)
 	if err != nil {
 		log.Println("Failed to open temporary file:", err.Error())
@@ -147,8 +146,7 @@ func syncWorker(url string, modTime string, wg *sync.WaitGroup, ctx context.Cont
 	defer wg.Done()
 
 	// Get file name for URL
-	urlsum := sha1.Sum([]byte(url))
-	filename := config.Config.DataDir + "/" + hex.EncodeToString(urlsum[:]) + ".tmp"
+	filename := getTmpFilename(url)
 
 	// Create request to fetch the feed
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
@@ -196,4 +194,9 @@ func syncWorker(url string, modTime string, wg *sync.WaitGroup, ctx context.Cont
 	default:
 		return
 	}
+}
+
+func getTmpFilename(url string) string {
+	urlsum := sha1.Sum([]byte(url))
+	return config.Config.TmpDir + "/" + hex.EncodeToString(urlsum[:]) + ".tmp"
 }

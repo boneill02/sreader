@@ -8,11 +8,15 @@ import (
 )
 
 type SreaderConfig struct {
-	ConfDir         string
-	DataDir         string
-	ConfFile        string
-	URLs            []*string
-	DBFile          string
+	URLs []*string
+
+	// Paths
+	ConfFile string
+	DBFile   string
+	LogFile  string
+	TmpDir   string
+
+	// Colors
 	BG              string
 	FG              string
 	TitleBG         string
@@ -23,11 +27,29 @@ type SreaderConfig struct {
 	DescBG          string
 	SelectedDescFG  string
 	SelectedDescBG  string
-	Player          string
-	Browser         string
+
+	// Keys
+	UpKey      string
+	DownKey    string
+	LeftKey    string
+	RightKey   string
+	QuitKey    string
+	BrowserKey string
+	PlayerKey  string
+
+	// External applications
+	Player  string
+	Browser string
 }
 
 const (
+	// Default paths
+	defaultConfFile string = "~/.config/sreader/config.toml"
+	defaultDBFile   string = "~/.local/share/sreader/sreader.db"
+	defaultLogFile  string = "~/.local/share/sreader/sreader.log"
+	defaultTmpDir   string = "/tmp/sreader"
+
+	// Default colors
 	defaultBG              string = "#000000"
 	defaultFG              string = "#FFFFFF"
 	defaultTitleBG         string = "#FFFFFF"
@@ -38,22 +60,33 @@ const (
 	defaultDescBG          string = "#FFFFFF"
 	defaultSelectedDescFG  string = "#000000"
 	defaultSelectedDescBG  string = "#7FB685"
-	defaultPlayer          string = "mpv"
-	defaultBrowser         string = "firefox"
+
+	// Default keys
+	defaultUpKey      string = "k"
+	defaultDownKey    string = "j"
+	defaultLeftKey    string = "h"
+	defaultRightKey   string = "l"
+	defaultQuitKey    string = "q"
+	defaultBrowserKey string = "o"
+	defaultPlayerKey  string = "v"
+
+	// Default external applications
+	defaultPlayer  string = "mpv"
+	defaultBrowser string = "firefox"
 )
 
 // Defaults
 var (
-	defaultConfDir  string = os.Getenv("HOME") + "/.config/sreader"
-	defaultDataDir  string = os.Getenv("HOME") + "/.local/share/sreader"
-	defaultConfPath string = defaultConfDir + "/config.toml"
-	defaultDBFile   string = defaultDataDir + "/sreader.db"
-	Config  *SreaderConfig = &SreaderConfig{
-		ConfDir:         defaultConfDir,  // Not usable in config file
-		ConfFile:        defaultConfPath, // Not usable in config file
-		DataDir:         defaultDataDir,
-		URLs:            nil,
-		DBFile:          defaultDBFile,
+	Config *SreaderConfig = &SreaderConfig{
+		URLs: nil,
+
+		// Paths
+		ConfFile: defaultConfFile, // Not usable in config file
+		DBFile:   defaultDBFile,
+		LogFile:  defaultLogFile,
+		TmpDir:   defaultTmpDir,
+
+		// Colors
 		BG:              defaultBG,
 		FG:              defaultFG,
 		TitleBG:         defaultTitleBG,
@@ -64,16 +97,14 @@ var (
 		DescBG:          defaultDescBG,
 		SelectedDescFG:  defaultSelectedDescFG,
 		SelectedDescBG:  defaultSelectedDescBG,
-		Player:          defaultPlayer,
-		Browser:         defaultBrowser,
+
+		// External applications
+		Player:  defaultPlayer,
+		Browser: defaultBrowser,
 	}
 )
 
 func LoadConfig(path string) {
-	// Make directories if non-existent
-	os.MkdirAll(Config.DataDir, os.ModePerm)
-	os.MkdirAll(Config.ConfDir, os.ModePerm)
-
 	// Define default configuration
 	if envPlayer := os.Getenv("PLAYER"); envPlayer != "" {
 		Config.Player = envPlayer
@@ -99,4 +130,42 @@ func LoadConfig(path string) {
 		log.Fatalln("No URLs in configuration.")
 	}
 
+	// Make directories if non-existent
+	dbDir := getDirectoryOfFile(Config.DBFile)
+	tmpDir := expandHome(Config.TmpDir)
+	logDir := getDirectoryOfFile(Config.LogFile)
+	os.MkdirAll(tmpDir, 0700) // Create temporary directory if it does not exist
+	os.MkdirAll(dbDir, 0700)  // Create directory for database file if it does not exist
+	os.MkdirAll(logDir, 0700) // Create directory for log file if it does not exist
+
+	log.Println("Configuration loaded successfully.")
+}
+
+func expandHome(path string) string {
+	if path == "" {
+		return ""
+	}
+	if path[0] == '~' {
+		return os.Getenv("HOME") + path[1:]
+	}
+	return path
+}
+
+func getDirectoryOfFile(path string) string {
+	if path == "" {
+		return ""
+	}
+
+	path = expandHome(path)
+	dir := path
+	if idx := len(dir) - 1; idx >= 0 {
+		for i := len(dir) - 1; i >= 0; i-- {
+			if dir[i] == '/' {
+				dir = dir[:i]
+				break
+			}
+		}
+	}
+
+	return dir
 }
