@@ -5,4 +5,3 @@
 * Podcast support
 * Better error handling
 * Status bar on sync
-* Custom keybinds
