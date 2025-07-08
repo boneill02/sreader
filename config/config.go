@@ -34,6 +34,7 @@ type SreaderConfig struct {
 	LeftKey    string
 	RightKey   string
 	QuitKey    string
+	SyncKey    string
 	BrowserKey string
 	PlayerKey  string
 
@@ -67,6 +68,7 @@ const (
 	defaultLeftKey    string = "h"
 	defaultRightKey   string = "l"
 	defaultQuitKey    string = "q"
+	defaultSyncKey    string = "r"
 	defaultBrowserKey string = "o"
 	defaultPlayerKey  string = "v"
 
@@ -104,6 +106,7 @@ var (
 		LeftKey:    defaultLeftKey,
 		RightKey:   defaultRightKey,
 		QuitKey:    defaultQuitKey,
+		SyncKey:    defaultSyncKey,
 		BrowserKey: defaultBrowserKey,
 		PlayerKey:  defaultPlayerKey,
 
@@ -158,16 +161,6 @@ func LoadConfig(path string) {
 	os.MkdirAll(logDir, 0700) // Create directory for log file if it does not exist
 
 	log.Println("Configuration loaded successfully.")
-}
-
-func expandHome(path string) string {
-	if path == "" {
-		return ""
-	}
-	if path[0] == '~' {
-		return os.Getenv("HOME") + path[1:]
-	}
-	return path
 }
 
 func getDirectoryOfFile(path string) string {
