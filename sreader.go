@@ -23,7 +23,7 @@ func main() {
 		}
 	}
 
-	writer, err := os.Create(config.Config.LogFile)
+	writer, err := os.Create(config.ExpandHome(config.Config.LogFile))
 	if err != nil {
 		log.Fatalln("Failed to create log file:", err.Error())
 	}

@@ -113,6 +113,16 @@ var (
 	}
 )
 
+func ExpandHome(path string) string {
+	if path == "" {
+		return ""
+	}
+	if path[0] == '~' {
+		return os.Getenv("HOME") + path[1:]
+	}
+	return path
+}
+
 func LoadConfig(path string) {
 	// Define default configuration
 	if envPlayer := os.Getenv("PLAYER"); envPlayer != "" {
@@ -124,7 +134,7 @@ func LoadConfig(path string) {
 
 	// Load config file
 	if path != "" {
-		file, err := os.Open(path)
+		file, err := os.Open(ExpandHome(path))
 		if err != nil {
 			log.Fatalln("Failed to open configuration file:", err.Error())
 		}
@@ -141,7 +151,7 @@ func LoadConfig(path string) {
 
 	// Make directories if non-existent
 	dbDir := getDirectoryOfFile(Config.DBFile)
-	tmpDir := expandHome(Config.TmpDir)
+	tmpDir := ExpandHome(Config.TmpDir)
 	logDir := getDirectoryOfFile(Config.LogFile)
 	os.MkdirAll(tmpDir, 0700) // Create temporary directory if it does not exist
 	os.MkdirAll(dbDir, 0700)  // Create directory for database file if it does not exist
@@ -165,7 +175,7 @@ func getDirectoryOfFile(path string) string {
 		return ""
 	}
 
-	path = expandHome(path)
+	path = ExpandHome(path)
 	dir := path
 	if idx := len(dir) - 1; idx >= 0 {
 		for i := len(dir) - 1; i >= 0; i-- {
