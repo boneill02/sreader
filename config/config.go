@@ -98,6 +98,15 @@ var (
 		SelectedDescFG:  defaultSelectedDescFG,
 		SelectedDescBG:  defaultSelectedDescBG,
 
+		// Keys
+		UpKey:      defaultUpKey,
+		DownKey:    defaultDownKey,
+		LeftKey:    defaultLeftKey,
+		RightKey:   defaultRightKey,
+		QuitKey:    defaultQuitKey,
+		BrowserKey: defaultBrowserKey,
+		PlayerKey:  defaultPlayerKey,
+
 		// External applications
 		Player:  defaultPlayer,
 		Browser: defaultBrowser,
