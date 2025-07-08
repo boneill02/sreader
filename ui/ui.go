@@ -152,7 +152,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case entryView:
 				m.entryView.ScrollUp(1)
 			}
-		case "r":
+		case config.Config.SyncKey:
 			feed.Sync()
 			m.feeds = feed.GetFeeds()
 		case config.Config.BrowserKey:
