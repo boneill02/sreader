@@ -11,14 +11,21 @@ import (
 )
 
 func main() {
-	confFlag := flag.String("c", config.Config.ConfFile, "Path to the configuration file")
+	// Modify default config file path if XDG_CONFIG_HOME is set
+	confPath := config.ExpandHome(config.Config.ConfFile)
+	if xdgConfDir := os.Getenv("XDG_CONFIG_HOME"); xdgConfDir != "" {
+		confPath = xdgConfDir + "/sreader/config.toml"
+	}
+
+	// Parse command line flags
+	confFlag := flag.String("c", confPath, "Path to the configuration file")
 	syncFlag := flag.Bool("s", false, "Sync feeds and exit")
 	flag.Parse()
 
 	config.LoadConfig(*confFlag)
 	feed.InitDB()
 
-	// sync and quit if called with the arg "sync"
+	// sync and quit if called with "-s" flag
 	if *syncFlag {
 		feed.Sync()
 		return

@@ -48,7 +48,7 @@ const (
 	defaultConfFile string = "~/.config/sreader/config.toml"
 	defaultDBFile   string = "~/.local/share/sreader/sreader.db"
 	defaultLogFile  string = "~/.local/share/sreader/sreader.log"
-	defaultTmpDir   string = "/tmp/sreader"
+	defaultTmpDir   string = "~/.local/share/sreader"
 
 	// Default colors
 	defaultBG              string = "#000000"
@@ -127,12 +127,17 @@ func ExpandHome(path string) string {
 }
 
 func LoadConfig(path string) {
-	// Define default configuration
+	// Load environment variables if set
 	if envPlayer := os.Getenv("PLAYER"); envPlayer != "" {
 		Config.Player = envPlayer
 	}
 	if envBrowser := os.Getenv("BROWSER"); envBrowser != "" {
 		Config.Browser = envBrowser
+	}
+	if dataHome := os.Getenv("XDG_DATA_HOME"); dataHome != "" {
+		Config.DBFile = dataHome + "/sreader/sreader.db"
+		Config.LogFile = dataHome + "/sreader/sreader.log"
+		Config.TmpDir = dataHome + "/sreader"
 	}
 
 	// Load config file
