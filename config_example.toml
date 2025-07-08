@@ -9,7 +9,7 @@ URLs = [
 # Paths
 DBFile = "/home/me/.local/share/sreader/sreader.db"
 LogFile = "/home/me/.local/share/sreader/sreader.log"
-TmpDir = "/tmp/sreader"
+TmpDir = "/home/me/.local/share/sreader"
 
 # Foreground and background colors
 # These colors are used for the text and background of the entire viewport
