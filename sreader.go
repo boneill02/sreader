@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"os"
 
@@ -10,17 +11,17 @@ import (
 )
 
 func main() {
-	config.LoadConfig(config.Config.ConfFile)
+	confFlag := flag.String("c", config.Config.ConfFile, "Path to the configuration file")
+	syncFlag := flag.Bool("sync", false, "Sync feeds and exit")
+	flag.Parse()
 
+	config.LoadConfig(*confFlag)
 	feed.InitDB()
 
 	// sync and quit if called with the arg "sync"
-	if len(os.Args) > 1 {
-		switch os.Args[1] {
-		case "sync":
-			feed.Sync()
-			return
-		}
+	if *syncFlag {
+		feed.Sync()
+		return
 	}
 
 	writer, err := os.Create(config.ExpandHome(config.Config.LogFile))

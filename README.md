@@ -3,12 +3,20 @@
 [![Build Status](https://github.com/bmoneill/sreader/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/bmoneill/sreader/actions/workflows/go.yml).
 [![Dependabot Active](https://img.shields.io/badge/dependabot-active-brightgreen?style=flat-square&logo=dependabot)](https://github.com/bmoneill/sreader/security/dependabot)
 
+## Installation
+
+```shell
+go install
+```
+
 ## Usage
 
-1. `go install` (ensure `$HOME/.local/share/go/bin` is in your `$PATH`)
-1. Create config file at `~/.config/sreader/config.toml` and add URLs
-1. Run `sreader sync`
-1. Run `sreader`
+```shell
+sreader [-c configfile] [-s]
+```
+
+- `-c`: Set configuration file
+- `-s`: Sync feeds
 
 ## Features
 
