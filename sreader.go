@@ -12,7 +12,7 @@ import (
 
 func main() {
 	confFlag := flag.String("c", config.Config.ConfFile, "Path to the configuration file")
-	syncFlag := flag.Bool("sync", false, "Sync feeds and exit")
+	syncFlag := flag.Bool("s", false, "Sync feeds and exit")
 	flag.Parse()
 
 	config.LoadConfig(*confFlag)
