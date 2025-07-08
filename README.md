@@ -23,6 +23,7 @@ sreader [-c configfile] [-s]
 - [X] Clean, intuitive TUI interface
 - [X] Open entries in browser or media player
 - [X] Vim key bindings
+- [X] [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/latest/) compliant
 
 ## Keybindings
 
@@ -40,8 +41,8 @@ sreader uses Vim-like keybindings by default.
 ## Configuration
 
 sreader can load settings, including feed URLs, colors, keybindings, and paths
-through a configuration file located at `~/.config/sreader/config.toml`. See
-[config_example.toml](config_example.toml) for an example.
+through a configuration file located at `~/sreader/config.toml`.
+See [config_example.toml](config_example.toml) for an example.
 
 The example configuration file contains all the default values, besides the URL
 list. After installing, you can run sreader to generate a configuration file
