@@ -110,9 +110,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.entryView.Height = msg.Height
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "q":
+		case config.Config.QuitKey:
 			return m, tea.Quit
-		case "h":
+		case config.Config.LeftKey:
 			switch m.view {
 			case mainView:
 				return m, tea.Quit
@@ -123,7 +123,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.view = feedView
 				m.currEntry = 0
 			}
-		case "l":
+		case config.Config.RightKey:
 			switch m.view {
 			case mainView:
 				m.currFeed = m.feedList.Index()
@@ -134,7 +134,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.updateViewport()
 				m.view = entryView
 			}
-		case "j":
+		case config.Config.DownKey:
 			switch m.view {
 			case mainView:
 				m.feedList, _ = m.feedList.Update(msg)
@@ -143,7 +143,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case entryView:
 				m.entryView.ScrollDown(1)
 			}
-		case "k":
+		case config.Config.UpKey:
 			switch m.view {
 			case mainView:
 				m.feedList, _ = m.feedList.Update(msg)
@@ -155,12 +155,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "r":
 			feed.Sync()
 			m.feeds = feed.GetFeeds()
-		case "o":
+		case config.Config.BrowserKey:
 			if m.view == feedView || m.view == entryView {
 				link := m.feeds[m.currFeed].Entries[m.currEntry].URL
 				feed.OpenInBrowser(link, m.config.Browser)
 			}
-		case "v":
+		case config.Config.PlayerKey:
 			if m.view == feedView || m.view == entryView {
 				link := m.feeds[m.currFeed].Entries[m.currEntry].URL
 				feed.OpenInPlayer(link, m.config.Player)
