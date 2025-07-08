@@ -39,53 +39,13 @@ sreader uses Vim-like keybindings by default.
 
 ## Configuration
 
-`sreader` can load settings through a config file located at
-`~/.config/sreader/config.toml`. See [config_example.toml](config_example.toml)
-for an example (everything there except the URL list are the defaults).
+sreader can load settings, including feed URLs, colors, keybindings, and paths
+through a configuration file located at `~/.config/sreader/config.toml`. See
+[config_example.toml](config_example.toml) for an example.
 
-A config file with the URL list must be present before running `sreader`.
-
-The following settings are supported (colors are represented by hex strings):
-
-- `URLs` (**REQUIRED**): List of feed URLs
-
-### Paths
-
-- `DBFile`: Path to the database
-- `LogFile`: Path to the log file
-- `TmpDir`: Where to store temporary files (used during sync)
-
-### Colors
-
-- `FG`: Primary text color for non-selected list items (and entry contents)
-- `BG`: Primary background color for non-selected list items (and entry contents)
-- `TitleFG`: Non-selected list entry title foreground color
-- `TitleBG`: Non-selected list entry title background color
-- `SelectedTitleFG`: Selected list entry title foreground color
-- `SelectedTitleBG`: Selected list entry title background color
-- `DescFG`: Non-selected list entry description foreground color
-- `DescBG`: Non-selected list entry description background color
-- `SelectedDescFG`: Selected list entry description foreground color
-- `SelectedDescBG`: Selected list entry description background color
-
-### Keys
-
-- `UpKey`: Move up
-- `DownKey`: Move down
-- `LeftKey`: Move left
-- `RightKey`: Move right
-- `QuitKey`: Quit
-- `SyncKey`: Sync feeds
-- `BrowserKey`: Open entry in browser
-- `PlayerKey`: Open entry in media player
-
-### External applications
-
-If these are not set in your configuration file but the `$BROWSER` or `$PLAYER`
-environment variables are set, those will be used respectively.
-
-- `Browser`: Path to default browser
-- `Player`: Path to default video player
+The example configuration file contains all the default values, besides the URL
+list. After installing, you can run sreader to generate a configuration file
+and then add your feed URLs. Colors must be in hex format.
 
 ## Screenshots
 
