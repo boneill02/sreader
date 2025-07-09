@@ -131,7 +131,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.view = entryListView
 			case entryListView:
 				m.currEntry = m.entryList.Index()
-				m.updateViewport()
+				m.updateEntryView()
 				m.view = entryView
 			}
 		case config.Config.DownKey:
@@ -184,51 +184,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 	return m, nil
-}
-
-// In entryList, updates the list of entries based on the currently selected feed.
-func (m *model) updateEntryList() {
-	entryItems := []list.Item{}
-	if m.currFeed < len(m.feeds) {
-		for _, item := range m.feeds[m.currFeed].Entries {
-			entryItems = append(entryItems, feedItem{
-				title: item.Title,
-				link:  item.URL,
-			})
-		}
-	}
-	m.entryList.SetItems(entryItems)
-	m.entryList.SetDelegate(listDelegate)
-	m.entryList.Select(0)
-	m.currEntry = 0
-}
-
-func (m *model) updateFeedList() {
-	feedItems := []list.Item{}
-	for _, f := range m.feeds {
-		feedItems = append(feedItems, feedItem{
-			title: f.Title,
-			desc:  f.Description,
-			link:  f.URL,
-		})
-	}
-	m.feedList.SetItems(feedItems)
-	m.feedList.SetDelegate(listDelegate)
-	m.feedList.Select(0)
-	m.currFeed = 0
-}
-
-// In entryView, updates the viewport with the content of the currently selected entry.
-func (m *model) updateViewport() {
-	if m.currFeed < len(m.feeds) && m.currEntry < len(m.feeds[m.currFeed].Entries) {
-		// Set the content to the selected entry's content
-		content := "\nDate: " + m.feeds[m.currFeed].Entries[m.currEntry].DatePublished
-		content += "\nLink: " + m.feeds[m.currFeed].Entries[m.currEntry].URL
-		content += "\n\n" + htmlTruncate(m.feeds[m.currFeed].Entries[m.currEntry].Description, m.width-2)
-		content += "\n\n" + htmlTruncate(m.feeds[m.currFeed].Entries[m.currEntry].Content, m.width-2)
-		m.entry.SetContent(content)
-		m.entry.GotoTop()
-	}
 }
 
 // Renders the current view of the model.
@@ -329,4 +284,49 @@ func newModel(feeds []*feed.Feed, width, height int) model {
 		width:     width,
 		height:    height,
 	}
+}
+
+// In entryList, updates the list of entries based on the currently selected feed.
+func (m *model) updateEntryList() {
+	entryItems := []list.Item{}
+	if m.currFeed < len(m.feeds) {
+		for _, item := range m.feeds[m.currFeed].Entries {
+			entryItems = append(entryItems, feedItem{
+				title: item.Title,
+				link:  item.URL,
+			})
+		}
+	}
+	m.entryList.SetItems(entryItems)
+	m.entryList.SetDelegate(listDelegate)
+	m.entryList.Select(0)
+	m.currEntry = 0
+}
+
+// In entryView, updates the viewport with the content of the currently selected entry.
+func (m *model) updateEntryView() {
+	if m.currFeed < len(m.feeds) && m.currEntry < len(m.feeds[m.currFeed].Entries) {
+		// Set the content to the selected entry's content
+		content := "\nDate: " + m.feeds[m.currFeed].Entries[m.currEntry].DatePublished
+		content += "\nLink: " + m.feeds[m.currFeed].Entries[m.currEntry].URL
+		content += "\n\n" + htmlTruncate(m.feeds[m.currFeed].Entries[m.currEntry].Description, m.width-2)
+		content += "\n\n" + htmlTruncate(m.feeds[m.currFeed].Entries[m.currEntry].Content, m.width-2)
+		m.entry.SetContent(content)
+		m.entry.GotoTop()
+	}
+}
+
+func (m *model) updateFeedList() {
+	feedItems := []list.Item{}
+	for _, f := range m.feeds {
+		feedItems = append(feedItems, feedItem{
+			title: f.Title,
+			desc:  f.Description,
+			link:  f.URL,
+		})
+	}
+	m.feedList.SetItems(feedItems)
+	m.feedList.SetDelegate(listDelegate)
+	m.feedList.Select(0)
+	m.currFeed = 0
 }
