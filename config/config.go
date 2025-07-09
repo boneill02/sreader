@@ -156,13 +156,15 @@ func LoadConfig(path string) {
 		log.Fatalln("No URLs in configuration.")
 	}
 
+	// Expand tilde in paths
+	Config.DBFile = ExpandHome(Config.DBFile)
+	Config.LogFile = ExpandHome(Config.LogFile)
+	Config.TmpDir = ExpandHome(Config.TmpDir)
+
 	// Make directories if non-existent
-	dbDir := getDirectoryOfFile(Config.DBFile)
-	tmpDir := ExpandHome(Config.TmpDir)
-	logDir := getDirectoryOfFile(Config.LogFile)
-	os.MkdirAll(tmpDir, 0700)
-	os.MkdirAll(dbDir, 0700)
-	os.MkdirAll(logDir, 0700)
+	os.MkdirAll(getDirectoryOfFile(Config.DBFile), 0700)
+	os.MkdirAll(getDirectoryOfFile(Config.LogFile), 0700)
+	os.MkdirAll(Config.TmpDir, 0700)
 
 	log.Println("Configuration loaded successfully.")
 }
