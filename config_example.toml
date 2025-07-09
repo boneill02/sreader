@@ -37,6 +37,7 @@ QuitKey = "q" # Quit the application
 SyncKey = "r" # Sync feeds
 BrowserKey = "o" # Open the selected entry in Browser
 PlayerKey = "v" # Play the selected entry in Player
+SearchKey = "/" # Search/filter the current view
 
 # Player to use for opening media
 Player = "mpv"
