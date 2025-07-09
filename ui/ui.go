@@ -155,6 +155,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case config.Config.SyncKey:
 			feed.Sync()
 			m.feeds = feed.GetFeeds()
+			switch m.view {
+			case mainView:
+				m.updateFeedList()
+			case feedView:
+				m.updateEntryList()
+			}
+			m.updateEntryList()
 		case config.Config.BrowserKey:
 			if m.view == feedView || m.view == entryView {
 				link := m.feeds[m.currFeed].Entries[m.currEntry].URL
@@ -196,6 +203,21 @@ func (m *model) updateEntryList() {
 	m.currEntry = 0
 }
 
+func (m *model) updateFeedList() {
+	feedItems := []list.Item{}
+	for _, f := range m.feeds {
+		feedItems = append(feedItems, feedItem{
+			title: f.Title,
+			desc:  f.Description,
+			link:  f.URL,
+		})
+	}
+	m.feedList.SetItems(feedItems)
+	m.feedList.SetDelegate(listDelegate)
+	m.feedList.Select(0)
+	m.currFeed = 0
+}
+
 // In entryView, updates the viewport with the content of the currently selected entry.
 func (m *model) updateViewport() {
 	if m.currFeed < len(m.feeds) && m.currEntry < len(m.feeds[m.currFeed].Entries) {
@@ -221,9 +243,9 @@ func (m model) View() string {
 		s += m.entryView.View()
 	}
 	s += "\n[" + config.Config.LeftKey + "] back [" + config.Config.RightKey +
-	     "] enter [" + config.Config.DownKey + "/" + config.Config.UpKey +
-		 "] move [" + config.Config.QuitKey + "] quit [" + config.Config.SyncKey +
-		 "] sync [" + config.Config.BrowserKey + "] open [" + config.Config.PlayerKey + "] play"
+		"] enter [" + config.Config.DownKey + "/" + config.Config.UpKey +
+		"] move [" + config.Config.QuitKey + "] quit [" + config.Config.SyncKey +
+		"] sync [" + config.Config.BrowserKey + "] open [" + config.Config.PlayerKey + "] play"
 
 	// Render the entire UI with the app style
 	return appStyle.Render(lipgloss.Place(m.width, m.height, lipgloss.Left, lipgloss.Top, s))
