@@ -18,8 +18,8 @@ type viewState int
 
 // View states
 const (
-	mainView viewState = iota
-	feedView
+	feedListView viewState = iota
+	entryListView
 	entryView
 )
 
@@ -114,40 +114,40 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case config.Config.LeftKey:
 			switch m.view {
-			case mainView:
+			case feedListView:
 				return m, tea.Quit
-			case feedView:
-				m.view = mainView
+			case entryListView:
+				m.view = feedListView
 				m.currFeed = 0
 			case entryView:
-				m.view = feedView
+				m.view = entryListView
 				m.currEntry = 0
 			}
 		case config.Config.RightKey:
 			switch m.view {
-			case mainView:
+			case feedListView:
 				m.currFeed = m.feedList.Index()
 				m.updateEntryList()
-				m.view = feedView
-			case feedView:
+				m.view = entryListView
+			case entryListView:
 				m.currEntry = m.entryList.Index()
 				m.updateViewport()
 				m.view = entryView
 			}
 		case config.Config.DownKey:
 			switch m.view {
-			case mainView:
+			case feedListView:
 				m.feedList, _ = m.feedList.Update(msg)
-			case feedView:
+			case entryListView:
 				m.entryList, _ = m.entryList.Update(msg)
 			case entryView:
 				m.entryView.ScrollDown(1)
 			}
 		case config.Config.UpKey:
 			switch m.view {
-			case mainView:
+			case feedListView:
 				m.feedList, _ = m.feedList.Update(msg)
-			case feedView:
+			case entryListView:
 				m.entryList, _ = m.entryList.Update(msg)
 			case entryView:
 				m.entryView.ScrollUp(1)
@@ -156,27 +156,27 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			feed.Sync()
 			m.feeds = feed.GetFeeds()
 			switch m.view {
-			case mainView:
+			case feedListView:
 				m.updateFeedList()
-			case feedView:
+			case entryListView:
 				m.updateEntryList()
 			}
 			m.updateEntryList()
 		case config.Config.BrowserKey:
-			if m.view == feedView || m.view == entryView {
+			if m.view == entryListView || m.view == entryView {
 				link := m.feeds[m.currFeed].Entries[m.currEntry].URL
 				feed.OpenInBrowser(link, m.config.Browser)
 			}
 		case config.Config.PlayerKey:
-			if m.view == feedView || m.view == entryView {
+			if m.view == entryListView || m.view == entryView {
 				link := m.feeds[m.currFeed].Entries[m.currEntry].URL
 				feed.OpenInPlayer(link, m.config.Player)
 			}
 		default:
 			switch m.view {
-			case mainView:
+			case feedListView:
 				m.feedList, _ = m.feedList.Update(msg)
-			case feedView:
+			case entryListView:
 				m.entryList, _ = m.entryList.Update(msg)
 			case entryView:
 				m.entryView, _ = m.entryView.Update(msg)
@@ -235,9 +235,9 @@ func (m *model) updateViewport() {
 func (m model) View() string {
 	s := fmt.Sprintf("%s\n\n", titlestr)
 	switch m.view {
-	case mainView:
+	case feedListView:
 		s += m.feedList.View()
-	case feedView:
+	case entryListView:
 		s += m.entryList.View()
 	case entryView:
 		s += m.entryView.View()
@@ -318,7 +318,7 @@ func newModel(feeds []*feed.Feed, width, height int) model {
 	return model{
 		feeds:     feeds,
 		config:    config.Config,
-		view:      mainView,
+		view:      feedListView,
 		feedList:  feedList,
 		entryList: entryList,
 		entryView: vp,
