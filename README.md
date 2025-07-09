@@ -34,6 +34,7 @@ sreader uses Vim-like keybindings by default.
 - `j`: Select next item
 - `k`: Select previous item
 - `l`: Open selected item
+- `/`: Filter list items
 - `o`: Open selected list entry in web browser
 - `v`: Open selected list entry in video player
 - `r`: Refresh feeds
