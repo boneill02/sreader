@@ -242,6 +242,8 @@ func (m model) View() string {
 	case entryView:
 		s += m.entry.View()
 	}
+
+	// Controls helper
 	s += "\n[" + config.Config.LeftKey + "] back [" + config.Config.RightKey +
 		"] enter [" + config.Config.DownKey + "/" + config.Config.UpKey +
 		"] move [" + config.Config.QuitKey + "] quit [" + config.Config.SyncKey +
@@ -321,7 +323,7 @@ func newModel(feeds []*feed.Feed, width, height int) model {
 		view:      feedListView,
 		feedList:  feedList,
 		entryList: entryList,
-		entry: vp,
+		entry:     vp,
 		currFeed:  0,
 		currEntry: 0,
 		width:     width,
