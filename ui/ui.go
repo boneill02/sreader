@@ -44,7 +44,7 @@ type model struct {
 	view      viewState
 	feedList  list.Model
 	entryList list.Model
-	entryView viewport.Model
+	entry     viewport.Model
 	currFeed  int
 	currEntry int
 	width     int
@@ -106,8 +106,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width, m.height = msg.Width, msg.Height
 		m.feedList.SetSize(msg.Width, msg.Height)
 		m.entryList.SetSize(msg.Width, msg.Height)
-		m.entryView.Width = msg.Width
-		m.entryView.Height = msg.Height
+		m.entry.Width = msg.Width
+		m.entry.Height = msg.Height
 	case tea.KeyMsg:
 		switch msg.String() {
 		case config.Config.QuitKey:
@@ -141,7 +141,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case entryListView:
 				m.entryList, _ = m.entryList.Update(msg)
 			case entryView:
-				m.entryView.ScrollDown(1)
+				m.entry.ScrollDown(1)
 			}
 		case config.Config.UpKey:
 			switch m.view {
@@ -150,7 +150,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case entryListView:
 				m.entryList, _ = m.entryList.Update(msg)
 			case entryView:
-				m.entryView.ScrollUp(1)
+				m.entry.ScrollUp(1)
 			}
 		case config.Config.SyncKey:
 			feed.Sync()
@@ -179,7 +179,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case entryListView:
 				m.entryList, _ = m.entryList.Update(msg)
 			case entryView:
-				m.entryView, _ = m.entryView.Update(msg)
+				m.entry, _ = m.entry.Update(msg)
 			}
 		}
 	}
@@ -226,8 +226,8 @@ func (m *model) updateViewport() {
 		content += "\nLink: " + m.feeds[m.currFeed].Entries[m.currEntry].URL
 		content += "\n\n" + htmlTruncate(m.feeds[m.currFeed].Entries[m.currEntry].Description, m.width-2)
 		content += "\n\n" + htmlTruncate(m.feeds[m.currFeed].Entries[m.currEntry].Content, m.width-2)
-		m.entryView.SetContent(content)
-		m.entryView.GotoTop()
+		m.entry.SetContent(content)
+		m.entry.GotoTop()
 	}
 }
 
@@ -240,7 +240,7 @@ func (m model) View() string {
 	case entryListView:
 		s += m.entryList.View()
 	case entryView:
-		s += m.entryView.View()
+		s += m.entry.View()
 	}
 	s += "\n[" + config.Config.LeftKey + "] back [" + config.Config.RightKey +
 		"] enter [" + config.Config.DownKey + "/" + config.Config.UpKey +
@@ -321,7 +321,7 @@ func newModel(feeds []*feed.Feed, width, height int) model {
 		view:      feedListView,
 		feedList:  feedList,
 		entryList: entryList,
-		entryView: vp,
+		entry: vp,
 		currFeed:  0,
 		currEntry: 0,
 		width:     width,
