@@ -34,7 +34,7 @@ type feedItem struct {
 	link  string
 }
 
-func (f feedItem) Title()       string { return f.title }
+func (f feedItem) Title() string       { return f.title }
 func (f feedItem) Description() string { return f.desc }
 func (f feedItem) FilterValue() string { return f.title }
 
@@ -52,6 +52,8 @@ type model struct {
 
 // Handles user input and updates the model accordingly
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmds []tea.Cmd
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
@@ -60,6 +62,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.entry.Width = msg.Width
 		m.entry.Height = msg.Height
 	case tea.KeyMsg:
+		if m.entryList.FilterState() == list.Filtering || m.feedList.FilterState() == list.Filtering {
+			// Need to figure out why this is necessary
+			switch m.view {
+			case entryListView:
+				if m.entryList.FilterInput.Value()[0] == '/' {
+					m.entryList.FilterInput.SetValue(m.entryList.FilterInput.Value()[1:])
+				}
+			case feedListView:
+				if m.feedList.FilterInput.Value()[0] == '/' {
+					m.feedList.FilterInput.SetValue(m.feedList.FilterInput.Value()[1:])
+				}
+			}
+			break
+		}
 		switch msg.String() {
 		case config.Config.QuitKey:
 			return m, tea.Quit
@@ -134,6 +150,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	}
+
+	switch m.view {
+	case feedListView:
+		newFeedListModel, cmd := m.feedList.Update(msg)
+		m.feedList = newFeedListModel
+		cmds = append(cmds, cmd)
+		return m, tea.Batch(cmds...)
+	case entryListView:
+		newEntryListModel, cmd := m.entryList.Update(msg)
+		m.entryList = newEntryListModel
+		cmds = append(cmds, cmd)
+		return m, tea.Batch(cmds...)
+	}
+
 	return m, nil
 }
 
@@ -162,8 +192,6 @@ func (m model) View() string {
 // Initializes the UI with the given feeds and configuration.
 func Init(feeds []*feed.Feed) *tea.Program {
 	width, height := 500, 24 // width set to 500, hopefully enough for most screens
-
-	// Keys
 
 	// Styles
 	bg := lipgloss.Color(config.Config.BG)
@@ -198,6 +226,12 @@ func Init(feeds []*feed.Feed) *tea.Program {
 
 	m := newModel(feeds, width, height)
 	m.feedList.SetDelegate(listDelegate)
+	m.feedList.SetShowTitle(true)
+	m.feedList.SetShowFilter(true)
+	m.entryList.SetDelegate(listDelegate)
+	m.entryList.SetShowTitle(true)
+	m.entryList.SetShowFilter(true)
+
 	appStyle = lipgloss.NewStyle().
 		Foreground(fg).
 		Background(bg).
