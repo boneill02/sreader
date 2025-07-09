@@ -135,12 +135,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				feed.OpenInPlayer(link, config.Config.Player)
 			}
 			return m, nil
+		case config.Config.SearchKey:
+			switch m.view {
+			case feedListView:
+				m.feedList.SetFilterState(list.Filtering)
+			case entryListView:
+				m.entryList.SetFilterState(list.Filtering)
+			}
+			return m, nil
 		}
 	}
 
 	switch m.view {
 	case feedListView:
-		if m.feedList.FilterState() == list.Filtering && len(m.feedList.FilterValue()) > 0 && m.feedList.FilterValue()[0] == '/' {
+		if m.feedList.FilterState() == list.Filtering &&
+			len(m.feedList.FilterValue()) > 0 &&
+			m.feedList.FilterValue()[0] == config.Config.SearchKey[0] {
 			m.feedList.SetFilterText(m.feedList.FilterValue()[1:])
 		}
 
@@ -148,7 +158,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.feedList = newFeedListModel
 		cmds = append(cmds, cmd)
 	case entryListView:
-		if m.entryList.FilterState() == list.Filtering && len(m.entryList.FilterValue()) > 0 && m.entryList.FilterValue()[0] == '/' {
+		if m.entryList.FilterState() == list.Filtering &&
+			len(m.entryList.FilterValue()) > 0 &&
+			m.entryList.FilterValue()[0] == config.Config.SearchKey[0] {
 			m.entryList.SetFilterText(m.entryList.FilterValue()[1:])
 		}
 

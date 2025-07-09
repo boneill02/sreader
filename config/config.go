@@ -36,6 +36,7 @@ type SreaderConfig struct {
 	SyncKey    string
 	BrowserKey string
 	PlayerKey  string
+	SearchKey  string
 
 	// External applications
 	Player  string
@@ -70,6 +71,7 @@ const (
 	defaultSyncKey    string = "r"
 	defaultBrowserKey string = "o"
 	defaultPlayerKey  string = "v"
+	defaultSearchKey  string = "/"
 
 	// Default external applications
 	defaultPlayer  string = "mpv"
@@ -107,6 +109,7 @@ var (
 		SyncKey:    defaultSyncKey,
 		BrowserKey: defaultBrowserKey,
 		PlayerKey:  defaultPlayerKey,
+		SearchKey:  defaultSearchKey,
 
 		// External applications
 		Player:  defaultPlayer,
