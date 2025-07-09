@@ -62,20 +62,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.entry.Width = msg.Width
 		m.entry.Height = msg.Height
 	case tea.KeyMsg:
+		// Let bubbletea handle filtering
 		if m.entryList.FilterState() == list.Filtering || m.feedList.FilterState() == list.Filtering {
-			// FIXME Shouldn't be necessary, inputs being processed twice?
-			switch m.view {
-			case entryListView:
-				if m.entryList.FilterInput.Value()[0] == '/' {
-					m.entryList.FilterInput.SetValue(m.entryList.FilterInput.Value()[1:])
-				}
-			case feedListView:
-				if m.feedList.FilterInput.Value()[0] == '/' {
-					m.feedList.FilterInput.SetValue(m.feedList.FilterInput.Value()[1:])
-				}
-			}
 			break
 		}
+
 		switch msg.String() {
 		case config.Config.QuitKey:
 			return m, tea.Quit
@@ -110,6 +101,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case entryView:
 				m.entry.ScrollDown(1)
 			}
+			return m, nil
 		case config.Config.UpKey:
 			switch m.view {
 			case feedListView:
@@ -119,6 +111,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case entryView:
 				m.entry.ScrollUp(1)
 			}
+			return m, nil
 		case config.Config.SyncKey:
 			feed.Sync()
 			m.feeds = feed.GetFeeds()
@@ -129,42 +122,46 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.updateEntryList()
 			}
 			m.updateEntryList()
+			return m, nil
 		case config.Config.BrowserKey:
 			if m.view == entryListView || m.view == entryView {
 				link := m.feeds[m.currFeed].Entries[m.currEntry].URL
 				feed.OpenInBrowser(link, config.Config.Browser)
 			}
+			return m, nil
 		case config.Config.PlayerKey:
 			if m.view == entryListView || m.view == entryView {
 				link := m.feeds[m.currFeed].Entries[m.currEntry].URL
 				feed.OpenInPlayer(link, config.Config.Player)
 			}
-		default:
-			switch m.view {
-			case feedListView:
-				m.feedList, _ = m.feedList.Update(msg)
-			case entryListView:
-				m.entryList, _ = m.entryList.Update(msg)
-			case entryView:
-				m.entry, _ = m.entry.Update(msg)
-			}
+			return m, nil
 		}
 	}
 
 	switch m.view {
 	case feedListView:
+		if m.feedList.FilterState() == list.Filtering && len(m.feedList.FilterValue()) > 0 && m.feedList.FilterValue()[0] == '/' {
+			m.feedList.SetFilterText(m.feedList.FilterValue()[1:])
+		}
+
 		newFeedListModel, cmd := m.feedList.Update(msg)
 		m.feedList = newFeedListModel
 		cmds = append(cmds, cmd)
-		return m, tea.Batch(cmds...)
 	case entryListView:
+		if m.entryList.FilterState() == list.Filtering && len(m.entryList.FilterValue()) > 0 && m.entryList.FilterValue()[0] == '/' {
+			m.entryList.SetFilterText(m.entryList.FilterValue()[1:])
+		}
+
 		newEntryListModel, cmd := m.entryList.Update(msg)
 		m.entryList = newEntryListModel
 		cmds = append(cmds, cmd)
-		return m, tea.Batch(cmds...)
+	case entryView:
+		newEntryModel, cmd := m.entry.Update(msg)
+		m.entry = newEntryModel
+		cmds = append(cmds, cmd)
 	}
 
-	return m, nil
+	return m, tea.Batch(cmds...)
 }
 
 // Renders the current view of the model.
