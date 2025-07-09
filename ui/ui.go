@@ -63,7 +63,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.entry.Height = msg.Height
 	case tea.KeyMsg:
 		if m.entryList.FilterState() == list.Filtering || m.feedList.FilterState() == list.Filtering {
-			// Need to figure out why this is necessary
+			// FIXME Shouldn't be necessary, inputs being processed twice?
 			switch m.view {
 			case entryListView:
 				if m.entryList.FilterInput.Value()[0] == '/' {
