@@ -204,48 +204,44 @@ func GetEntries(feedID int) []*Entry {
 }
 
 func GetFeedByURL(url string) *Feed {
-	rows, err := conn.Query("SELECT 1 FROM feeds WHERE url = ?", url)
+	row := conn.QueryRow("SELECT id, url, title, description, last_updated FROM feeds WHERE url = ?", url)
+	var (
+		id          int64
+		dbURL       string
+		title       string
+		description string
+		lastUpdated string
+	)
+	err := row.Scan(&id, &dbURL, &title, &description, &lastUpdated)
 	if err != nil {
 		return nil
 	}
-	defer rows.Close()
 
-	if rows.Next() {
-		// Feed exists
-		return &Feed{URL: url}
+	feed := &Feed{
+		ID:          id,
+		URL:         dbURL,
+		Title:       title,
+		Description: description,
+		LastUpdated: lastUpdated,
+		Entries:     GetEntries(int(id)),
 	}
-	return nil
+	return feed
 }
 
 // Retrieve all feeds
 func GetFeeds() []*Feed {
-	rows, err := conn.Query("SELECT id, url, title, description, last_updated FROM feeds")
-	if err != nil {
-		return nil
-	}
-	defer rows.Close()
-
 	var feeds []*Feed
-	for rows.Next() {
-		var id int
-		var url, title, description string
-		var lastUpdated string
-
-		err := rows.Scan(&id, &url, &title, &description, &lastUpdated)
-		if err != nil {
-			return nil
+	for _, url := range config.Config.URLs {
+		log.Println("Checking feed URL:", *url)
+		if len(*url) > 0 {
+			feed := GetFeedByURL(*url)
+			if feed != nil {
+				log.Println("Feed found in database:", *url)
+				feeds = append(feeds, feed)
+			} else {
+				log.Println("Feed not found in database:", *url)
+			}
 		}
-
-		feed := &Feed{
-			ID:          int64(id),
-			URL:         url,
-			Title:       title,
-			Description: description,
-			LastUpdated: lastUpdated,
-			Entries:     GetEntries(id),
-		}
-		feeds = append(feeds, feed)
-		log.Println(len(feed.Entries), "entries loaded for feed:", feed.Title, " (", id, ")")
 	}
 
 	return feeds

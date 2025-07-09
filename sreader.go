@@ -31,6 +31,10 @@ func main() {
 		return
 	}
 
+	feeds := feed.GetFeeds()
+
+	ui := ui.Init(feeds)
+
 	writer, err := os.Create(config.ExpandHome(config.Config.LogFile))
 	if err != nil {
 		log.Fatalln("Failed to create log file:", err.Error())
@@ -38,8 +42,6 @@ func main() {
 
 	log.SetOutput(writer)
 
-	feeds := feed.GetFeeds()
-	ui := ui.Init(feeds)
 	if _, err := ui.Run(); err != nil {
 		log.Fatalln("Failed to start UI", err.Error())
 	}

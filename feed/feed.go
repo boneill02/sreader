@@ -118,6 +118,9 @@ func loadRSSFeed(url string) *gofeed.Feed {
 	feed.Description = formatHTMLString(feed.Description)
 	feed.Title = formatHTMLString(feed.Title)
 
+	// Set feed link to the URL used to fetch it
+	feed.Link = url
+
 	for _, item := range feed.Items {
 		item.Title = formatHTMLString(item.Title)
 		item.Description = formatHTMLString(item.Description)
