@@ -34,7 +34,7 @@ type feedItem struct {
 	link  string
 }
 
-func (f feedItem) Title() string       { return f.title }
+func (f feedItem) Title()       string { return f.title }
 func (f feedItem) Description() string { return f.desc }
 func (f feedItem) FilterValue() string { return f.title }
 
@@ -48,56 +48,6 @@ type model struct {
 	currEntry int
 	width     int
 	height    int
-}
-
-// Initializes the UI with the given feeds and configuration.
-func Init(feeds []*feed.Feed) *tea.Program {
-	width, height := 500, 24 // width set to 500, hopefully enough for most screens
-
-	// Keys
-
-	// Styles
-	bg := lipgloss.Color(config.Config.BG)
-	fg := lipgloss.Color(config.Config.FG)
-	selectedTitleFG := lipgloss.Color(config.Config.SelectedTitleFG)
-	selectedTitleBG := lipgloss.Color(config.Config.SelectedTitleBG)
-	selectedDescFG := lipgloss.Color(config.Config.SelectedDescFG)
-	selectedDescBG := lipgloss.Color(config.Config.SelectedDescBG)
-	titleFG := lipgloss.Color(config.Config.TitleFG)
-	titleBG := lipgloss.Color(config.Config.TitleBG)
-	descFG := lipgloss.Color(config.Config.DescFG)
-	descBG := lipgloss.Color(config.Config.DescBG)
-
-	// Load list delegate with styles
-	listDelegate = list.NewDefaultDelegate()
-	listDelegate.Styles.NormalTitle = lipgloss.NewStyle().
-		Foreground(titleFG).
-		Background(titleBG).
-		Width(width)
-	listDelegate.Styles.SelectedTitle = lipgloss.NewStyle().
-		Foreground(selectedTitleFG).
-		Background(selectedTitleBG).
-		Width(width)
-	listDelegate.Styles.NormalDesc = lipgloss.NewStyle().
-		Foreground(descFG).
-		Background(descBG).
-		Width(width)
-	listDelegate.Styles.SelectedDesc = lipgloss.NewStyle().
-		Foreground(selectedDescFG).
-		Background(selectedDescBG).
-		Width(width)
-
-	m := newModel(feeds, width, height)
-	m.feedList.SetDelegate(listDelegate)
-	appStyle = lipgloss.NewStyle().
-		Foreground(fg).
-		Background(bg).
-		Width(width)
-	return tea.NewProgram(m, tea.WithAltScreen())
-}
-
-func (m model) Init() tea.Cmd {
-	return nil
 }
 
 // Handles user input and updates the model accordingly
@@ -207,6 +157,56 @@ func (m model) View() string {
 
 	// Render the entire UI with the app style
 	return appStyle.Render(lipgloss.Place(m.width, m.height, lipgloss.Left, lipgloss.Top, s))
+}
+
+// Initializes the UI with the given feeds and configuration.
+func Init(feeds []*feed.Feed) *tea.Program {
+	width, height := 500, 24 // width set to 500, hopefully enough for most screens
+
+	// Keys
+
+	// Styles
+	bg := lipgloss.Color(config.Config.BG)
+	fg := lipgloss.Color(config.Config.FG)
+	selectedTitleFG := lipgloss.Color(config.Config.SelectedTitleFG)
+	selectedTitleBG := lipgloss.Color(config.Config.SelectedTitleBG)
+	selectedDescFG := lipgloss.Color(config.Config.SelectedDescFG)
+	selectedDescBG := lipgloss.Color(config.Config.SelectedDescBG)
+	titleFG := lipgloss.Color(config.Config.TitleFG)
+	titleBG := lipgloss.Color(config.Config.TitleBG)
+	descFG := lipgloss.Color(config.Config.DescFG)
+	descBG := lipgloss.Color(config.Config.DescBG)
+
+	// Load list delegate with styles
+	listDelegate = list.NewDefaultDelegate()
+	listDelegate.Styles.NormalTitle = lipgloss.NewStyle().
+		Foreground(titleFG).
+		Background(titleBG).
+		Width(width)
+	listDelegate.Styles.SelectedTitle = lipgloss.NewStyle().
+		Foreground(selectedTitleFG).
+		Background(selectedTitleBG).
+		Width(width)
+	listDelegate.Styles.NormalDesc = lipgloss.NewStyle().
+		Foreground(descFG).
+		Background(descBG).
+		Width(width)
+	listDelegate.Styles.SelectedDesc = lipgloss.NewStyle().
+		Foreground(selectedDescFG).
+		Background(selectedDescBG).
+		Width(width)
+
+	m := newModel(feeds, width, height)
+	m.feedList.SetDelegate(listDelegate)
+	appStyle = lipgloss.NewStyle().
+		Foreground(fg).
+		Background(bg).
+		Width(width)
+	return tea.NewProgram(m, tea.WithAltScreen())
+}
+
+func (m model) Init() tea.Cmd {
+	return nil
 }
 
 // Converts HTML to plain text and wraps lines at the specified width.
