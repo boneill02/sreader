@@ -40,7 +40,6 @@ func (f feedItem) FilterValue() string { return f.title }
 
 type model struct {
 	feeds     []*feed.Feed
-	config    *config.SreaderConfig
 	view      viewState
 	feedList  list.Model
 	entryList list.Model
@@ -54,6 +53,8 @@ type model struct {
 // Initializes the UI with the given feeds and configuration.
 func Init(feeds []*feed.Feed) *tea.Program {
 	width, height := 500, 24 // width set to 500, hopefully enough for most screens
+
+	// Keys
 
 	// Styles
 	bg := lipgloss.Color(config.Config.BG)
@@ -165,12 +166,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case config.Config.BrowserKey:
 			if m.view == entryListView || m.view == entryView {
 				link := m.feeds[m.currFeed].Entries[m.currEntry].URL
-				feed.OpenInBrowser(link, m.config.Browser)
+				feed.OpenInBrowser(link, config.Config.Browser)
 			}
 		case config.Config.PlayerKey:
 			if m.view == entryListView || m.view == entryView {
 				link := m.feeds[m.currFeed].Entries[m.currEntry].URL
-				feed.OpenInPlayer(link, m.config.Player)
+				feed.OpenInPlayer(link, config.Config.Player)
 			}
 		default:
 			switch m.view {
@@ -274,7 +275,6 @@ func newModel(feeds []*feed.Feed, width, height int) model {
 
 	return model{
 		feeds:     feeds,
-		config:    config.Config,
 		view:      feedListView,
 		feedList:  feedList,
 		entryList: entryList,
