@@ -11,10 +11,9 @@ type SreaderConfig struct {
 	URLs []*string
 
 	// Paths
-	ConfFile string
-	DBFile   string
-	LogFile  string
-	TmpDir   string
+	DBFile  string
+	LogFile string
+	TmpDir  string
 
 	// Colors
 	BG              string
@@ -45,7 +44,7 @@ type SreaderConfig struct {
 
 const (
 	// Default paths
-	defaultConfFile string = "~/.config/sreader/config.toml"
+	DefaultConfFile string = "~/.config/sreader/config.toml"
 	defaultDBFile   string = "~/.local/share/sreader/sreader.db"
 	defaultLogFile  string = "~/.local/share/sreader/sreader.log"
 	defaultTmpDir   string = "~/.local/share/sreader"
@@ -83,10 +82,9 @@ var (
 		URLs: nil,
 
 		// Paths
-		ConfFile: defaultConfFile, // Not usable in config file
-		DBFile:   defaultDBFile,
-		LogFile:  defaultLogFile,
-		TmpDir:   defaultTmpDir,
+		DBFile:  defaultDBFile,
+		LogFile: defaultLogFile,
+		TmpDir:  defaultTmpDir,
 
 		// Colors
 		BG:              defaultBG,
