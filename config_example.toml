@@ -1,4 +1,5 @@
-# Example configuration for sreader
+# sreader config example
+# Copy this file to ~/.config/sreader/config.toml and edit it to your liking.
 
 # URL list (REQUIRED)
 URLs = [
@@ -6,12 +7,18 @@ URLs = [
     "https://another-example.com/index.xml",
 ]
 
-# Paths
+#############
+### PATHS ###
+#############
+
 DBFile = "~/.local/share/sreader/sreader.db"
 LogFile = "~/.local/share/sreader/sreader.log"
 TmpDir = "~/.local/share/sreader"
 
-# Foreground and background colors
+##############
+### COLORS ###
+##############
+
 # These colors are used for the text and background of the entire viewport
 FG = "#BFD7EA" # Very light blue
 BG = "#000000" # Black
@@ -28,7 +35,10 @@ DescBG = "#000000" # Black
 SelectedDescFG = "#000000" # Black
 SelectedDescBG = "#306BAC" # Light blue
 
-# Key bindings
+####################
+### KEY BINDINGS ###
+####################
+
 UpKey = "j" # Move up
 DownKey = "k" # Move down
 LeftKey = "h" # Go back to the previous view
@@ -39,8 +49,9 @@ BrowserKey = "o" # Open the selected entry in Browser
 PlayerKey = "v" # Play the selected entry in Player
 FilterKey = "/" # Search/filter the current view
 
-# Player to use for opening media
-Player = "mpv"
+#############################
+### EXTERNAL APPLICATIONS ###
+#############################
 
-# Browser to use for opening web links
-Browser = "firefox"
+Player = "mpv" # Media player
+Browser = "firefox" # Web browser
