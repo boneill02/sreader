@@ -43,8 +43,8 @@ sreader uses Vim-like keybindings by default.
 ## Configuration
 
 sreader can load settings, including feed URLs, colors, keybindings, and paths
-through a configuration file located at `~/sreader/config.toml`.
-See [config_example.toml](config_example.toml) for an example.
+through a configuration file. See [config_example.toml](config_example.toml) for
+an example.
 
 The example configuration file contains all the default values, besides the URL
 list. After installing, you can run sreader to generate a configuration file
