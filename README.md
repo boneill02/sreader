@@ -5,6 +5,8 @@
 
 ## Installation
 
+### Linux
+
 ```shell
 go install github.com/bmoneill/sreader@latest
 $GOPATH/bin/sreader
